@@ -92,6 +92,16 @@ def create_refresh_token(user_id: int, sesion_version: int) -> str:
     return create_token(payload, expires_delta=expires, scope="refresh")
 
 
+def create_password_reset_token(user_id: int, sesion_version: int) -> str:
+    """Emite un token temporal de 15 minutos para restablecer contraseña."""
+    expires = timedelta(minutes=settings.RESET_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "sub": str(user_id),
+        "sesion_version": sesion_version
+    }
+    return create_token(payload, expires_delta=expires, scope="password_reset")
+
+
 def decode_token(token: str, expected_scope: Optional[str] = None) -> Dict[str, Any]:
     """
     Decodifica y valida un JWT. Lanza jwt.PyJWTError si el token es inválido,

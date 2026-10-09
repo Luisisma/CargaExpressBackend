@@ -35,15 +35,15 @@ Antes de marcar cualquier endpoint como `✅ Completado`, se debe certificar el 
 
 ---
 
-### Módulo 2: Portal Público y Clientes (`/api/v1/publico/*`) - [Especificación Sprint 04](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-04-portal-publico-tracking-cotizador.md)
+### Módulo 2: Portal Público y Clientes (`/api/v1/publico/*`) - [Certificado en Sprint 04](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-04-portal-publico-tracking-cotizador.md)
 
 | Endpoint | Método | Roles Permitidos | Controles OWASP Clave | Estado | Observaciones |
 | :--- | :---: | :---: | :--- | :---: | :--- |
-| `/api/v1/publico/agencias` | `GET` | Público | Consulta agencias activas, ocultar campos de auditoría interna. | 📋 En Especificación | Catálogo público agrupado por departamento. |
-| `/api/v1/publico/cotizar` | `POST` | Público | Cálculo seguro en servidor (A04), peso volumétrico, extra='forbid'. | 📋 En Especificación | Prevención de manipulación de importes en cliente. |
-| `/api/v1/publico/tracking/{codigo}` | `GET` | Público | Enmascaramiento de PII (API1), sanitización regex `^CE-\d{4}-\d{5}$`. | 📋 En Especificación | Historial cronológico seguro de hitos. |
-| `/api/v1/publico/buscar-cliente/{doc}` | `GET` | Público | Validación DNI/RUC, tasa limitada, protección de contactos. | 📋 En Especificación | Autocompletado para clientes recurrentes. |
-| `/api/v1/publico/pedidos/registrar` | `POST` | Público | Transacción atómica, cálculo de importes contables en backend. | 📋 En Especificación | Generación correlativa segura de tracking. |
+| `/api/v1/publico/agencias` | `GET` | Público | Consulta agencias activas, ocultar campos de auditoría interna. | ✅ Certificado E2E | Probado en vivo: lista agencias operativas habilitadas en BDD. |
+| `/api/v1/publico/cotizar` | `POST` | Público | Cálculo seguro en servidor (A04), peso volumétrico, extra='forbid'. | ✅ Certificado E2E | Probado en vivo: cálculo server-side tarifario y volumétrico SUNAT. |
+| `/api/v1/publico/tracking/{codigo}` | `GET` | Público | Enmascaramiento de PII (API1/API3), sanitización regex `^CE-\d{4}-\d{5}$`. | ✅ Certificado E2E | Probado en vivo: línea de tiempo y protección de datos personales. |
+| `/api/v1/publico/buscar-cliente/{doc}` | `GET` | Público | Validación DNI/RUC, tasa limitada, protección de contactos. | ✅ Certificado E2E | Probado en vivo: autocompleta clientes frecuentes sin exponer PII. |
+| `/api/v1/publico/pedidos/registrar` | `POST` | Público | Transacción ACID, desglose SUNAT, correlativo CE-YYYY-NNNNN. | ✅ Certificado E2E | Probado en vivo: persistió encomienda CE-2026-00003 e hito histórico. |
 
 ---
 
@@ -58,14 +58,15 @@ Antes de marcar cualquier endpoint como `✅ Completado`, se debe certificar el 
 
 ---
 
-### Módulo 4: Caja y Turnos (`/api/v1/admin/caja/*`)
+### Módulo 4: Caja, Cobros y Webhook (`/api/v1/caja/*` y `/api/v1/pagos/*`) - [Especificación Sprint 05](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-05-caja-cobros-recepcion-comprobantes.md)
 
 | Endpoint | Método | Roles Permitidos | Controles OWASP Clave | Estado | Observaciones |
 | :--- | :---: | :---: | :--- | :---: | :--- |
-| `/api/v1/admin/caja/estado` | `GET` | `ADMIN`, `CAJERO` | Consulta de turno activo del usuario autenticado. | ⏳ Pendiente | Un cajero no puede consultar la caja de otro. |
-| `/api/v1/admin/caja/apertura` | `POST` | `CAJERO` | Bloqueo de doble apertura, validación de monto inicial `>= 0`. | ⏳ Pendiente | Audit log inmediato del evento financiero. |
-| `/api/v1/admin/caja/movimiento` | `POST` | `CAJERO` | Validación de tipo (INGRESO/EGRESO), justificación obligatoria. | ⏳ Pendiente | Montos con precisión decimal (`Decimal(10,2)`). |
-| `/api/v1/admin/caja/cierre` | `POST` | `CAJERO` | Arqueo ciego o conciliado, cálculo automático de descuadres. | ⏳ Pendiente | Registro inmutable de cierre de turno. |
+| `/api/v1/caja/aperturar` | `POST` | `CAJERO`, `ADMIN` | Bloqueo de doble apertura por usuario, validación de saldo `>= 0.00`. | 📋 Especificado SDD | Registra apertura en aperturas_caja en Soles. |
+| `/api/v1/caja/estado-actual` | `GET` | `CAJERO`, `ADMIN` | BOLA: Consulta exclusiva del turno del cajero autenticado. | 📋 Especificado SDD | Calcula balance vivo de efectivo, POS y Yape/Plin. |
+| `/api/v1/caja/cerrar` | `POST` | `CAJERO`, `ADMIN` | Arqueo final inmutable, cálculo de descuadres. | 📋 Especificado SDD | Cierra la sesión activa del usuario. |
+| `/api/v1/caja/cobrar-presencial` | `POST` | `CAJERO`, `ADMIN` | Transacción ACID: Cobro físico + inserción en movimientos_caja + emisión de Boleta/Factura. | 📋 Especificado SDD | Dispara correo 2 (pago confirmado y comprobante). |
+| `/api/v1/pagos/webhook-simulado` | `POST` | Público / HMAC | Firma criptográfica HMAC-SHA256 (`X-Webhook-Signature`), validación de idempotencia. | 📋 Especificado SDD | Emula pasarela Culqi/Niubiz y actualiza estado a pagado. |
 
 ---
 

@@ -1,5 +1,6 @@
+import re
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 class LoginRequestSchema(BaseModel):
@@ -88,5 +89,50 @@ class SetupTwoFactorData(BaseModel):
 class ConfirmTwoFactorSchema(BaseModel):
     """Confirmación del primer código TOTP para activar 2FA de forma permanente."""
     codigo_totp: str = Field(..., pattern=r"^\d{6}$", description="Código de 6 dígitos generado por la app")
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+
+class SolicitarRecuperacionSchema(BaseModel):
+    """Solicitud de recuperación de contraseña vía DNI o Correo Electrónico."""
+    identificador: str = Field(
+        ...,
+        min_length=3,
+        max_length=150,
+        description="DNI (8 dígitos) o Correo Electrónico registrado del empleado"
+    )
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+
+class RestablecerPasswordSchema(BaseModel):
+    """Esquema para definir una nueva contraseña utilizando el token firmado."""
+    token: str = Field(..., min_length=10, description="Token JWT de recuperación recibido por correo")
+    nueva_password: str = Field(
+        ...,
+        min_length=8,
+        max_length=100,
+        description="Nueva contraseña segura para la cuenta"
+    )
+    codigo_totp: Optional[str] = Field(
+        None,
+        pattern=r"^\d{6}$",
+        description="Código de 6 dígitos si la cuenta tiene 2FA configurado"
+    )
+
+    @field_validator("nueva_password")
+    @classmethod
+    def validar_complejidad_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("La contraseña debe tener al menos 8 caracteres.")
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("La contraseña debe incluir al menos una letra mayúscula (A-Z).")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("La contraseña debe incluir al menos una letra minúscula (a-z).")
+        if not re.search(r"\d", v):
+            raise ValueError("La contraseña debe incluir al menos un número (0-9).")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>\-_+=\[\]\\/~`]", v):
+            raise ValueError("La contraseña debe incluir al menos un símbolo o carácter especial (!@#$%...).")
+        return v
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)

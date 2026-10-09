@@ -8,6 +8,8 @@ from app.core.security import (
     create_access_token,
     create_refresh_token,
     create_temp_token,
+    create_password_reset_token,
+    get_password_hash,
     decode_token,
     generate_totp_secret,
     get_totp_uri,
@@ -22,6 +24,7 @@ from app.schemas.auth import (
     SetupTwoFactorData
 )
 from app.services.audit_service import registrar_auditoria_seguridad
+from app.services.email_service import enviar_correo_recuperacion
 
 
 def buscar_usuario_por_identificador(db: Session, identificador: str) -> Optional[Usuario]:
@@ -392,3 +395,178 @@ def activar_2fa(
         nivel_riesgo="INFO"
     )
     return True
+
+
+def enmascarar_email(email: str) -> str:
+    """Enmascara un correo electrónico para proteger la privacidad (ej. j***z@dominio.com)."""
+    if not email or "@" not in email:
+        return "correo registrado"
+    user_part, domain_part = email.split("@", 1)
+    if len(user_part) <= 2:
+        masked_user = user_part[0] + "*"
+    else:
+        masked_user = user_part[0] + "*" * (len(user_part) - 2) + user_part[-1]
+    return f"{masked_user}@{domain_part}"
+
+
+def procesar_solicitud_recuperacion(
+    db: Session,
+    identificador: str,
+    client_ip: str,
+    user_agent: Optional[str]
+) -> dict:
+    """
+    Procesa la solicitud de recuperación de contraseña:
+    - Busca usuario por DNI o Correo.
+    - Si existe y está activo: genera token JWT temporal firmado y envía correo vía Mailtrap.
+    - Cumple con OWASP API3: Siempre responde con éxito para evitar enumeración de usuarios.
+    """
+    usuario = buscar_usuario_por_identificador(db, identificador)
+
+    if not usuario or not usuario.activo:
+        registrar_auditoria_seguridad(
+            db=db,
+            evento="RECUPERACION_PASSWORD_USUARIO_NO_ENCONTRADO",
+            direccion_ip=client_ip,
+            user_agent=user_agent,
+            detalles={"identificador_buscado": identificador},
+            nivel_riesgo="WARN"
+        )
+        return {
+            "solicitud_procesada": True,
+            "enviado": True,
+            "mensaje": "Si el DNI o correo coincide con un empleado registrado, se ha enviado el enlace de recuperación a su correo."
+        }
+
+    # Generar token de recuperación ligado a su sesion_version
+    reset_token = create_password_reset_token(
+        user_id=usuario.id,
+        sesion_version=usuario.sesion_version
+    )
+
+    # Enviar correo mediante Mailtrap API
+    resultado_envio = enviar_correo_recuperacion(
+        destinatario_email=usuario.email,
+        destinatario_nombre=usuario.nombre_completo,
+        token=reset_token
+    )
+
+    registrar_auditoria_seguridad(
+        db=db,
+        evento="RECUPERACION_PASSWORD_SOLICITADA",
+        usuario_id=usuario.id,
+        direccion_ip=client_ip,
+        user_agent=user_agent,
+        detalles={
+            "email_destino": usuario.email,
+            "metodo_envio": resultado_envio.get("metodo")
+        },
+        nivel_riesgo="INFO"
+    )
+
+    return {
+        "solicitud_procesada": True,
+        "enviado": True,
+        "email_enmascarado": enmascarar_email(usuario.email),
+        "mensaje": f"Se ha enviado un enlace de recuperación al correo registrado ({enmascarar_email(usuario.email)}). Revise su bandeja de entrada.",
+        "debug_reset_url": resultado_envio.get("reset_url") if settings.DEBUG else None
+    }
+
+
+def procesar_restablecimiento_password(
+    db: Session,
+    token: str,
+    nueva_password: str,
+    codigo_totp: Optional[str],
+    client_ip: str,
+    user_agent: Optional[str]
+) -> dict:
+    """
+    Valida el token de restablecimiento y aplica la nueva contraseña:
+    - Valida firma y expiración del JWT con scope 'password_reset'.
+    - Verifica que 'sesion_version' en el token siga coincidiendo con el usuario (un solo uso).
+    - Si la cuenta tiene 2FA activo, exige y valida el código TOTP de 6 dígitos.
+    - Hashea con Bcrypt, resetea bloqueos e incrementa 'sesion_version' (revocando sesiones previas).
+    """
+    try:
+        payload = decode_token(token, expected_scope="password_reset")
+        user_id = int(payload.get("sub"))
+        token_version = int(payload.get("sesion_version", 0))
+    except Exception:
+        registrar_auditoria_seguridad(
+            db=db,
+            evento="RESTABLECER_PASSWORD_TOKEN_INVALIDO_O_EXPIRADO",
+            direccion_ip=client_ip,
+            user_agent=user_agent,
+            nivel_riesgo="WARN"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El enlace de restablecimiento es inválido o ha expirado. Por favor, solicita uno nuevo."
+        )
+
+    usuario = db.get(Usuario, user_id)
+    if not usuario or not usuario.activo:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no válido para restablecer contraseña."
+        )
+
+    # Validar un solo uso mediante sesión version
+    if usuario.sesion_version != token_version:
+        registrar_auditoria_seguridad(
+            db=db,
+            evento="RESTABLECER_PASSWORD_TOKEN_REUTILIZADO_RECHAZADO",
+            usuario_id=usuario.id,
+            direccion_ip=client_ip,
+            user_agent=user_agent,
+            nivel_riesgo="WARN"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Este enlace de restablecimiento ya fue utilizado anteriormente o las credenciales fueron actualizadas."
+        )
+
+    # Validación 2FA si la cuenta lo tiene configurado
+    if usuario.totp_configurado:
+        if not codigo_totp:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Esta cuenta tiene verificación de dos pasos (2FA) activa. Ingrese el código de 6 dígitos de Google Authenticator."
+            )
+        if not verify_totp_code(usuario.totp_secret, codigo_totp):
+            registrar_auditoria_seguridad(
+                db=db,
+                evento="RESTABLECER_PASSWORD_2FA_FALLIDO",
+                usuario_id=usuario.id,
+                direccion_ip=client_ip,
+                user_agent=user_agent,
+                nivel_riesgo="WARN"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Código de autenticación 2FA incorrecto o expirado."
+            )
+
+    # Actualizar credenciales y desbloquear
+    usuario.password_hash = get_password_hash(nueva_password)
+    usuario.intentos_fallidos = 0
+    usuario.bloqueado = False
+    usuario.bloqueado_hasta = None
+    usuario.sesion_version += 1  # Invalida de inmediato el token actual y sesiones abiertas
+    db.commit()
+
+    registrar_auditoria_seguridad(
+        db=db,
+        evento="PASSWORD_RESTABLECIDO_EXITOSO",
+        usuario_id=usuario.id,
+        direccion_ip=client_ip,
+        user_agent=user_agent,
+        detalles={"cambio_por": "restablecimiento_token"},
+        nivel_riesgo="INFO"
+    )
+
+    return {
+        "exito": True,
+        "mensaje": "Tu contraseña ha sido actualizada exitosamente. Ya puedes iniciar sesión con tus nuevas credenciales."
+    }

@@ -28,6 +28,15 @@ class Settings(BaseSettings):
     MAX_LOGIN_ATTEMPTS: int = 5
     LOCKOUT_MINUTES: int = 15
 
+    # Mailtrap & Notificaciones por Correo
+    MAILTRAP_API_TOKEN: str = ""
+    MAILTRAP_INBOX_ID: int = 4950980
+    FRONTEND_URL: str = "http://localhost:5173"
+    RESET_TOKEN_EXPIRE_MINUTES: int = 15
+
+    # Webhook
+    WEBHOOK_SECRET_KEY: str = "whsec_simulated_dev_key_2026"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

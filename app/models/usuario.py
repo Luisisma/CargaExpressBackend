@@ -56,7 +56,11 @@ class Usuario(Base):
         """Asigna una nueva contraseña con hash bcrypt seguro e invalida tokens previos."""
         self.password_hash = get_password_hash(plain_password)
         self.ultimo_cambio_password = datetime.utcnow()
-        self.sesion_version += 1  # Invalida todas las sesiones JWT emitidas anteriormente
+        if self.sesion_version is None:
+            self.sesion_version = 1
+        else:
+            self.sesion_version += 1  # Invalida todas las sesiones JWT emitidas anteriormente
+
 
     def __repr__(self) -> str:
         return f"<Usuario {self.dni} - {self.tipo}>"

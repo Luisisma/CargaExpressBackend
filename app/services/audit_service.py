@@ -39,18 +39,27 @@ def registrar_auditoria_seguridad(
 
 def registrar_auditoria_operacion(
     db: Session,
-    tabla_afectada: str,
-    registro_id: int,
-    accion: str,
-    direccion_ip: str,
+    tabla_afectada: str = "general",
+    registro_id: int = 0,
+    accion: str = "OPERACION",
+    direccion_ip: str = "127.0.0.1",
     valores_previos: Optional[Dict[str, Any]] = None,
     valores_nuevos: Optional[Dict[str, Any]] = None,
     usuario_id: Optional[int] = None,
-    request_id: Optional[str] = None
+    request_id: Optional[str] = None,
+    **kwargs
 ) -> AuditoriaOperaciones:
     """
     Registra una alteración de datos de negocio (INSERT, UPDATE, DELETE).
+    Soporta argumentos adicionales kwargs para máxima robustez.
     """
+    if "tabla" in kwargs:
+        tabla_afectada = kwargs["tabla"]
+    if "datos_nuevos" in kwargs:
+        valores_nuevos = kwargs["datos_nuevos"]
+    if "datos_previos" in kwargs:
+        valores_previos = kwargs["datos_previos"]
+
     registro = AuditoriaOperaciones(
         tabla_afectada=tabla_afectada,
         registro_id=registro_id,
@@ -61,6 +70,7 @@ def registrar_auditoria_operacion(
         direccion_ip=direccion_ip,
         request_id=request_id
     )
+
     db.add(registro)
     try:
         db.commit()

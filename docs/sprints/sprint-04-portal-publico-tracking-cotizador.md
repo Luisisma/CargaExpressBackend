@@ -1,106 +1,133 @@
-# Sprint 04: Migración del Portal Público, Cotizador, Rastreo (Tracking) y Registro Web
+# Sprint 04: Ciclo Completo de Envíos - Cotizador Real, Persistencia BDD y Dashboard en Vivo
 
-> **Módulo:** Portal Público y Clientes (`/api/v1/publico/*`)  
-> **Frontend:** [CargaExpressFront](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront) (Vistas en `src/pages/public/`)  
+> **Módulos:** 
+> 1. Motor de Cotización y Tarifas (`/api/v1/publico/cotizar`)
+> 2. Registro Transaccional de Envíos (`/api/v1/publico/pedidos/registrar`)
+> 3. Trazabilidad Pública con Protección PII (`/api/v1/publico/tracking/{codigo}`)
+> 4. Sincronización del Dashboard Administrativo (`/api/v1/dashboard/resumen` & `/api/v1/envios`)  
+> **Frontend:** [CargaExpressFront](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront) (`src/pages/public/` y `src/pages/admin/Dashboard.jsx`)  
 > **Backend:** [CargaExpressBackend](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend) (FastAPI + SQLAlchemy 2.0)  
-> **Monolito de Referencia:** [cargaexpress-](file:///c:/Users/User/Documents/VSC-Integrador/cargaexpress-) (`app/modules/publico/`)  
-> **Base de Datos:** PostgreSQL 17 ([`cargaexpress.sql`](file:///c:/Users/User/Documents/VSC-Integrador/cargaexpress.sql))  
-> **Estado del Sprint:** 📋 **PLANIFICADO Y ESPECIFICADO (SDD)**
+> **Persistencia:** SQLite Local (`cargaexpress.db`) / PostgreSQL 17 (`cargaexpress.sql`)  
+> **Estado del Sprint:** 🚀 **FASE 1 COMPLETADA Y CERTIFICADA E2E** (Portal Público, Registro Invitado y Tracking en BDD) | 📋 **FASE 2 PENDIENTE** (Dashboard Admin en Vivo)
 
 ---
 
-## 1. Justificación y Objetivos del Sprint
+## 1. Justificación y Objetivos de Negocio
 
-Tras conectar y certificar el módulo de autenticación (Sprint 03), el siguiente paso en la migración desacoplada es el **Portal Público de Autoservicio**. Este módulo permite a clientes no autenticados interactuar con el sistema sin riesgo para la infraestructura interna ni exposición indebida de datos sensibles.
+El objetivo primordial de este sprint es cerrar el **ciclo operativo completo** de CargaExpress Perú:
+1. **Calcular con precisión matemática** el costo del servicio en base a peso real y volumétrico.
+2. **Generar y persistir el envío** con integridad referencial estricta (clientes, encomienda, tracking correlativo y primer hito histórico).
+3. **Reflejar de inmediato el resultado en el Dashboard Administrativo**, sustituyendo los datos simulados (*mocks*) por métricas vivas calculadas desde la base de datos relacional.
 
-### Objetivos Clave:
-1. **Migrar Modelos SQLAlchemy 2.0:**
-   * Crear [`app/models/cliente.py`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/models/cliente.py) (`clientes`).
-   * Crear [`app/models/envio.py`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/models/envio.py) (`envios`, `historial_envios`).
-2. **Implementar Endpoints REST Seguros (`/api/v1/publico/*`):**
-   * `GET /api/v1/publico/agencias`: Catálogo de agencias activas agrupadas por departamento para los selectores del frontend.
-   * `POST /api/v1/publico/cotizar`: Motor de cálculo server-side aplicando peso volumétrico `(L * A * H) / 6000`, tarifa base, peso extra y recargo a domicilio.
-   * `GET /api/v1/publico/tracking/{codigo}`: Consulta del estado de envío en tiempo real con línea de tiempo histórica y **enmascaramiento estricto de PII (OWASP API1 / API3)**.
-   * `GET /api/v1/publico/buscar-cliente/{documento}`: Consulta de cliente recurrente (DNI/RUC) para autocompletar formularios, protegiendo datos de contacto.
-   * `POST /api/v1/publico/pedidos/registrar`: Registro de nuevo envío web con transacción ACID, alta o actualización de clientes y generación correlativa segura del código de tracking (`CE-YYYY-NNNNN`).
-3. **Conectar Vistas en Frontend (`CargaExpressFront`):**
-   * `src/pages/public/Cotizador.jsx`: Consumir `/api/v1/publico/cotizar` y agencias reales.
-   * `src/pages/public/Tracking.jsx`: Consumir `/api/v1/publico/tracking/{codigo}` mostrando hitos reales de la base de datos.
-   * `src/pages/public/RegistrarPedido.jsx`: Consumir `/api/v1/publico/pedidos/registrar` y redirigir a `/pedido-exitoso/:tracking`.
-
----
-
-## 2. Matriz de Endpoints y Controles de Seguridad OWASP
-
-| Endpoint | Método | Acceso | Controles OWASP | DTO / Esquema |
-| :--- | :---: | :---: | :--- | :--- |
-| `/api/v1/publico/agencias` | `GET` | Público | Solo agencias activas (`estado = 'habilitado'`), proyección de datos públicos sin IDs de auditoría interna. | `AgenciaPublicaResponse` |
-| `/api/v1/publico/cotizar` | `POST` | Público | Validación estricta de rangos (`peso > 0`, `dimensiones > 0`), prevención de manipulación de tarifas client-side (OWASP A04). | `CotizacionRequest` -> `CotizacionResponse` |
-| `/api/v1/publico/tracking/{codigo}` | `GET` | Público | Sanitización regex `^[A-Za-z0-9-]{8,20}$`, enmascaramiento de nombres y teléfonos (PII Protection), nunca exponer precios ni DNIs. | `TrackingPublicoResponse` |
-| `/api/v1/publico/buscar-cliente/{doc}` | `GET` | Público | Validación de formato DNI (8 dígitos) / RUC (11 dígitos). Rate limiting. Enmascaramiento de email. | `ClientePublicoResponse` |
-| `/api/v1/publico/pedidos/registrar` | `POST` | Público | Transacción atómica en PostgreSQL, DTO con `extra='forbid'`, cálculo server-side obligatorio de importes contables. | `RegistroPedidoRequest` -> `PedidoCreadoResponse` |
-
----
-
-## 3. Especificaciones Técnicas Detalladas (SDD)
-
-### 3.1. Cotizador Seguro (`POST /api/v1/publico/cotizar`)
-
-```python
-# Fórmula oficial de CargaExpress Perú:
-peso_volumetrico = round((largo_cm * ancho_cm * alto_cm) / 6000.0, 2)
-peso_liquidable = max(peso_kg, peso_volumetrico)
-tarifa_base = 8.00  # Tarifa base provincial
-tarifa_peso_adicional = round(peso_liquidable * 2.50, 2)
-recargo_domicilio = 12.00 if tipo_envio == "agencia_domicilio" else 0.00
-total_bruto = tarifa_base + tarifa_peso_adicional + recargo_domicilio
+```text
+┌────────────────────────┐      POST /publico/cotizar      ┌────────────────────────┐
+│  Cotizador Web / App   │ ──────────────────────────────> │   FastAPI Backend      │
+│  (kg, cm, agencias)    │ <────────────────────────────── │ (Tarifas e IGV SUNAT)  │
+└────────────────────────┘         Cálculo Server-Side     └────────────────────────┘
+            │                                                           │
+            │ POST /publico/pedidos/registrar                           │
+            ▼                                                           ▼
+┌────────────────────────┐         Transacción ACID        ┌────────────────────────┐
+│   Pedido Creado        │ ──────────────────────────────> │  Base de Datos (3NF)   │
+│   (CE-2026-NNNNN)      │                                 │  - clientes            │
+└────────────────────────┘                                 │  - envios              │
+                                                           │  - historial_envios    │
+                                                           └────────────────────────┘
+                                                                        │
+┌────────────────────────┐      GET /dashboard/resumen                  │
+│  Dashboard Admin       │ <────────────────────────────────────────────┘
+│  (KPIs en vivo e       │      Métricas reales: Ingresos hoy,
+│   historial reciente)  │      envíos hoy, pendientes de pago.
+└────────────────────────┘
 ```
 
-* **DTO Entrada:**
-  ```python
-  class CotizacionRequest(BaseModel):
-      agencia_origen_id: int = Field(..., gt=0)
-      agencia_destino_id: int = Field(..., gt=0)
-      tipo_envio: Literal["agencia_agencia", "agencia_domicilio"]
-      peso_kg: float = Field(..., gt=0, le=1000)
-      largo_cm: float = Field(..., gt=0, le=300)
-      ancho_cm: float = Field(..., gt=0, le=300)
-      alto_cm: float = Field(..., gt=0, le=300)
-      model_config = ConfigDict(extra="forbid")
-  ```
+---
 
-### 3.2. Rastreo Público de Envíos (`GET /api/v1/publico/tracking/{codigo}`)
+## 2. Requerimientos Funcionales y Validaciones Estrictas
 
-* **Protección de Datos Personales (PII):**
-  * Remitente `Juan Carlos Pérez` -> `J*** C***** P****`
-  * Destinatario `María Gómez` -> `M**** G****`
-  * Dirección de entrega solo muestra distrito/provincia, omitiendo la calle exacta.
-  * Los montos (`precio_envio`, `monto_subtotal`) **NO** se exponen en la API pública de tracking.
-* **Línea de Tiempo:**
-  * Lista ordenada de hitos en `historial_envios` con fecha, hito (`REGISTRADO`, `EN_TRANSITO`, `EN_AGENCIA`, `ENTREGADO`) y sede actual.
+### 2.1. Motor de Cálculo Tarifario Server-Side (OWASP A04)
+* **Prohibición de cálculo en cliente:** El Frontend envía dimensiones y peso; el backend calcula el precio final.
+* **Fórmulas Oficiales:**
+  * **Peso Volumétrico:**
+    $$\text{peso\_volumetrico} = \text{round}\left(\frac{\text{largo\_cm} \times \text{ancho\_cm} \times \text{alto\_cm}}{6000.0}, 2\right)$$
+  * **Peso Liquidable (Tarifable):**
+    $$\text{peso\_liquidable} = \max(\text{peso\_kg}, \text{peso\_volumetrico})$$
+  * **Cálculo de Tarifas:**
+    * Tarifa base provincial: `S/ 8.00`
+    * Tarifa por peso liquidable: `round(peso_liquidable * 2.50, 2)`
+    * Recargo por entrega a domicilio: `S/ 12.00` (solo si `tipo_envio == "agencia_domicilio"`, `0.00` si es agencia a agencia).
+    * **Precio Total Bruto:** `tarifa_base + tarifa_peso + recargo_domicilio`.
+  * **Desglose Contable SUNAT:**
+    * $\text{monto\_subtotal} = \text{round}(\text{precio\_total} / 1.18, 2)$
+    * $\text{monto\_igv} = \text{round}(\text{precio\_total} - \text{monto\_subtotal}, 2)$
+    * $\text{monto\_descuento} = 0.00$
 
-### 3.3. Registro Web de Encomiendas (`POST /api/v1/publico/pedidos/registrar`)
+### 2.2. Validaciones de Entrada (Pydantic v2 Schemas)
+* `peso_kg`: Flotante obligatorio, `gt=0.0`, `le=1000.0`.
+* `largo_cm`, `ancho_cm`, `alto_cm`: Flotantes obligatorios, `gt=0.0`, `le=300.0`.
+* `tipo_envio`: Literal estricto `["agencia_agencia", "agencia_domicilio"]`.
+* `agencia_origen_id`, `agencia_destino_id`: Enteros positivos que deben existir y tener `estado == 'habilitado'`.
+* **Identificación de Clientes:**
+  * DNI: Exactamente 8 dígitos numéricos `^\d{8}$`.
+  * RUC: Exactamente 11 dígitos numéricos `^\d{11}$`.
+  * Nombres/Razón Social: Entre 2 y 150 caracteres.
 
-* **Flujo Transaccional:**
-  1. Validar que la agencia de origen y destino existan y estén habilitadas.
-  2. Buscar o crear el cliente remitente en `clientes` usando DNI/RUC.
-  3. Buscar o crear el cliente destinatario en `clientes`.
-  4. Generar el código correlativo de tracking: `CE-YYYY-XXXXX`.
-  5. Calcular importes contables en el backend:
-     * `monto_subtotal = round(precio_total / 1.18, 2)`
-     * `monto_igv = round(precio_total - monto_subtotal, 2)`
-     * `monto_descuento = 0.00`
-  6. Insertar registro en `envios` con `estado = 'registrado'`, `registrado_web = true`, `estado_pago = 'pendiente'`.
-  7. Insertar primer hito en `historial_envios` (`estado = 'registrado'`, descripción: *"Envío pre-registrado vía portal web"*).
-  8. Commit atómico. En caso de error, rollback completo sin dejar registros huérfanos.
+### 2.3. Transacción Atómica de Registro (ACID)
+1. Iniciar sesión de base de datos con bloqueo transaccional.
+2. Buscar cliente remitente por documento en `clientes`; si no existe, crearlo.
+3. Buscar cliente destinatario por documento en `clientes`; si no existe, crearlo.
+4. Generar código correlativo de tracking único con formato `CE-YYYY-NNNNN` (ejemplo: `CE-2026-00002`).
+5. Insertar en la tabla `envios` con `estado = 'registrado'`, `estado_pago = 'pendiente'`, `registrado_web = true`.
+6. Insertar en `historial_envios`:
+   * `estado = 'registrado'`
+   * `descripcion = 'Envío pre-registrado vía portal web'`
+   * `agencia_id = agencia_origen_id`
+7. Commit atómico. Si ocurre cualquier excepción, ejecutar `rollback` para impedir registros huérfanos.
+
+### 2.4. Protección de Datos Personales en Tracking Público (OWASP API1 / API3)
+* Nunca exponer precios contables, documentos de identidad completos ni direcciones exactas a usuarios no autenticados en la API de rastreo.
+* Enmascaramiento de nombres: `Juan Carlos Pérez` -> `J*** C***** P****`.
+* La dirección de entrega solo expone distrito y provincia.
 
 ---
 
-## 4. Plan de Ejecución Paso a Paso
+## 3. Matriz de Endpoints del Sprint
 
-1. **Paso 4.1 (Backend):** Crear modelos SQLAlchemy 2.0 [`app/models/cliente.py`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/models/cliente.py) y [`app/models/envio.py`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/models/envio.py).
-2. **Paso 4.2 (Backend):** Crear esquemas Pydantic v2 en `app/schemas/publico.py`.
-3. **Paso 4.3 (Backend):** Implementar servicio `app/services/publico_service.py` con lógica de negocio y cálculos.
-4. **Paso 4.4 (Backend):** Crear router y endpoints en `app/api/v1/endpoints/publico.py` y montarlo en `app/api/v1/router.py`.
-5. **Paso 4.5 (Backend):** Tests unitarios automatizados con pytest cubriendo cotización, tracking y registro.
-6. **Paso 4.6 (Frontend):** Conectar `publicService.js` en `CargaExpressFront` hacia los nuevos endpoints y validar con el servidor en ejecución.
+| Endpoint | Método | Acceso | Propósito | DTO / Esquema | Estado de Implementación |
+| :--- | :---: | :---: | :--- | :--- | :---: |
+| `/api/v1/publico/agencias` | `GET` | Público | Lista agencias activas para selectores | `List[AgenciaPublicaDTO]` | ✅ En producción |
+| `/api/v1/publico/cotizar` | `POST` | Público | Cálculo matemático server-side | `CotizacionRequest` &rarr; `CotizacionResponse` | ✅ En producción |
+| `/api/v1/publico/buscar-cliente/{doc}` | `GET` | Público | Autocompletar clientes frecuentes | `ClientePublicoDTO` | ✅ En producción |
+| `/api/v1/publico/pedidos/registrar` | `POST` | Público | Genera y almacena nuevo envío en BDD | `RegistroPedidoRequest` &rarr; `PedidoCreadoResponse` | ✅ En producción |
+| `/api/v1/publico/tracking/{codigo}` | `GET` | Público | Consulta de línea de tiempo con PII oculto | `TrackingPublicoResponse` | ✅ En producción |
+| `/api/v1/dashboard/resumen` | `GET` | Autenticado | KPIs en vivo (envíos hoy, ingresos, tabla) | `DashboardResumenDTO` | 📋 Próximo paso |
+| `/api/v1/envios` | `GET` | Autenticado | Listado administrativo paginado de envíos | `List[EnvioAdminDTO]` | 📋 Próximo paso |
+
+---
+
+## 4. Avances Logrados y Certificación E2E (Fase 1)
+
+En la sesión de desarrollo actual se alcanzó la sincronización total del **Portal de Autoservicio Público**:
+
+1. **Frontend Integrado y Operativo:**
+   * [`RegistrarPedido.jsx`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/public/RegistrarPedido.jsx): Stepper de 4 pasos con consulta asíncrona de clientes (RENIEC / base de datos), selectores de agencias operativas activas y cotización en tiempo real.
+   * [`PedidoExitoso.jsx`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/public/PedidoExitoso.jsx): Despliegue de código correlativo `CE-2026-NNNNN`, desglose contable (Subtotal, IGV 18%, Total a pagar), copia rápida al portapapeles y botón de impresión de hoja de despacho.
+   * [`Tracking.jsx`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/public/Tracking.jsx): Consulta en vivo con línea de tiempo interactiva de hitos históricos y protección estricta PII.
+   * [`Cotizador.jsx`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/public/Cotizador.jsx): Enlace directo con traspaso de parámetros a la pantalla de registro de pedidos.
+
+2. **Evidencia de Pruebas Reales (Test de Navegador Automatizado):**
+   * Registro completado de la encomienda **`CE-2026-00003`** (4.0 kg, Lima ➔ Arequipa).
+   * Cálculo verificado en backend: Tarifa base $S/\ 8.00$ + Tarifa peso $S/\ 10.00$ = **$S/\ 18.00$** (Subtotal: $S/\ 15.25$, IGV: $S/\ 2.75$).
+   * Persistencia confirmada en base de datos relacional (`envios` e `historial_envios`) y trazabilidad consultada exitosamente en la vista pública de tracking.
+
+3. **Políticas de Negocio Asociadas:**
+   * Se incorporó el documento formal de reglas de negocio para cancelaciones y reembolsos:  
+     📄 [01-politicas-cancelaciones-reembolsos.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/01-politicas-cancelaciones-reembolsos.md).
+
+---
+
+## 5. Próximo Paso: Fase 2 (Dashboard Administrativo en Vivo)
+
+1. Implementar el endpoint autenticado `GET /api/v1/dashboard/resumen` con agregaciones SQL (`COUNT(*)`, `SUM(precio_envio)`).
+2. Conectar [`Dashboard.jsx`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/Dashboard.jsx) con `dashboardService.js` para reemplazar los *mocks* por datos vivos de la base de datos relacional.
+

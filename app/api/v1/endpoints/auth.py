@@ -11,14 +11,18 @@ from app.schemas.auth import (
     RefreshTokenSchema,
     UserProfileData,
     SetupTwoFactorData,
-    ConfirmTwoFactorSchema
+    ConfirmTwoFactorSchema,
+    SolicitarRecuperacionSchema,
+    RestablecerPasswordSchema
 )
 from app.services.auth_service import (
     procesar_login,
     procesar_verificacion_2fa,
     procesar_renovacion_token,
     generar_configuracion_2fa,
-    activar_2fa
+    activar_2fa,
+    procesar_solicitud_recuperacion,
+    procesar_restablecimiento_password
 )
 from app.services.audit_service import registrar_auditoria_seguridad
 
@@ -206,4 +210,62 @@ def logout(
         success=True,
         data={"sesion_revocada": True},
         message="Sesión cerrada correctamente. Tokens anteriores invalidados."
+    )
+
+
+@router.post(
+    "/recuperar-password",
+    response_model=EnvelopeResponse[dict],
+    summary="Solicitar recuperación de contraseña vía DNI o Correo",
+    description="Genera un token JWT temporal firmado de 15 minutos y envía un correo con el enlace de restablecimiento a través de Mailtrap."
+)
+def solicitar_recuperacion(
+    payload: SolicitarRecuperacionSchema,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    ip = get_client_ip(request)
+    user_agent = get_user_agent(request)
+
+    resultado = procesar_solicitud_recuperacion(
+        db=db,
+        identificador=payload.identificador,
+        client_ip=ip,
+        user_agent=user_agent
+    )
+
+    return EnvelopeResponse(
+        success=True,
+        data=resultado,
+        message=resultado["mensaje"]
+    )
+
+
+@router.post(
+    "/restablecer-password",
+    response_model=EnvelopeResponse[dict],
+    summary="Restablecer contraseña con token firmado",
+    description="Valida el token de 15 minutos (y el código 2FA si la cuenta lo requiere) y actualiza la contraseña aplicando hash seguro Bcrypt e incrementando la versión de sesión."
+)
+def restablecer_password(
+    payload: RestablecerPasswordSchema,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    ip = get_client_ip(request)
+    user_agent = get_user_agent(request)
+
+    resultado = procesar_restablecimiento_password(
+        db=db,
+        token=payload.token,
+        nueva_password=payload.nueva_password,
+        codigo_totp=payload.codigo_totp,
+        client_ip=ip,
+        user_agent=user_agent
+    )
+
+    return EnvelopeResponse(
+        success=True,
+        data=resultado,
+        message=resultado["mensaje"]
     )

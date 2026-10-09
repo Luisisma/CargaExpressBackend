@@ -9,6 +9,7 @@ from sqlalchemy import select, func
 from app.models.agencia import Agencia
 from app.models.cliente import Cliente
 from app.models.envio import Envio, HistorialEnvio
+from app.services.consulta_documento_service import ConsultaDocumentoService
 from app.schemas.publico import (
     CotizacionRequest,
     CotizacionResponse,
@@ -16,7 +17,9 @@ from app.schemas.publico import (
     TrackingHitoResponse,
     ClientePublicoResponse,
     RegistroPedidoPublicoRequest,
-    PedidoCreadoResponse
+    PedidoCreadoResponse,
+    CancelarPedidoRequest,
+    CancelarPedidoResponse
 )
 
 
@@ -75,8 +78,9 @@ class PublicoService:
 
         tarifa_base = 8.00
         tarifa_peso = round(peso_liquidable * 2.50, 2)
-        recargo_dom = 12.00 if req.tipo_envio == "agencia_domicilio" else 0.00
-        total = round(tarifa_base + tarifa_peso + recargo_dom, 2)
+        recargo_dom = 12.00 if req.tipo_envio in ["agencia_domicilio", "domicilio_domicilio"] else 0.00
+        recargo_recojo = 15.00 if req.tipo_envio in ["domicilio_agencia", "domicilio_domicilio"] else 0.00
+        total = round(tarifa_base + tarifa_peso + recargo_dom + recargo_recojo, 2)
 
         return CotizacionResponse(
             peso_fisico=round(req.peso_kg, 2),
@@ -85,6 +89,7 @@ class PublicoService:
             tarifa_base=tarifa_base,
             tarifa_peso_adicional=tarifa_peso,
             recargo_domicilio=recargo_dom,
+            recargo_recojo=recargo_recojo,
             precio_total=total
         )
 
@@ -122,27 +127,65 @@ class PublicoService:
             origen=origen_txt,
             destino=destino_txt,
             fecha_estimada=envio.fecha_estimada,
+            estado_pago=envio.estado_pago,
+            precio_total=float(envio.precio_envio),
             creado_en=envio.creado_en,
             historial=hitos
         )
 
     @staticmethod
     def buscar_cliente(db: Session, doc: str) -> ClientePublicoResponse:
-        """Autocompleta nombre del cliente protegiendo teléfonos y correos completos."""
-        doc_limpio = doc.strip()
+        """
+        Búsqueda híbrida de cliente:
+        1. Nivel Local: Busca en la base de datos de CargaExpress (clientes recurrentes).
+        2. Nivel Externo: Si no existe, consulta RENIEC (DNI) o SUNAT (RUC) obteniendo
+           el nombre exacto y verificado del portador/titular.
+        """
+        doc_limpio = re.sub(r"\D", "", doc or "").strip()
+        if not doc_limpio:
+            return ClientePublicoResponse(
+                encontrado=False,
+                fuente="manual",
+                mensaje="Número de documento no proporcionado."
+            )
+
+        # 1. Búsqueda en base local
         stmt = select(Cliente).where(Cliente.numero_documento == doc_limpio)
         cliente = db.execute(stmt).scalar_one_or_none()
 
-        if not cliente:
-            return ClientePublicoResponse(encontrado=False)
+        if cliente:
+            return ClientePublicoResponse(
+                encontrado=True,
+                fuente="local",
+                tipo_documento=cliente.tipo_documento,
+                numero_documento=cliente.numero_documento,
+                nombre_completo=cliente.nombre_completo,
+                tipo_cliente=cliente.tipo_cliente,
+                telefono_enmascarado=enmascarar_telefono(cliente.telefono),
+                email_enmascarado=enmascarar_email(cliente.email),
+                mensaje="Cliente registrado previamente en CargaExpress."
+            )
+
+        # 2. Búsqueda externa (RENIEC / SUNAT)
+        res_externo = ConsultaDocumentoService.consultar_documento(doc_limpio)
+        if res_externo.get("found") and res_externo.get("nombre_completo"):
+            fuente = res_externo.get("source", "reniec")
+            msg = "Portador verificado oficialmente ante RENIEC." if fuente == "reniec" else "Razón social obtenida desde SUNAT."
+            return ClientePublicoResponse(
+                encontrado=True,
+                fuente=fuente,
+                tipo_documento=res_externo.get("tipo_documento", "dni"),
+                numero_documento=doc_limpio,
+                nombre_completo=res_externo.get("nombre_completo"),
+                tipo_cliente=res_externo.get("tipo_cliente", "persona_natural"),
+                mensaje=msg
+            )
 
         return ClientePublicoResponse(
-            encontrado=True,
-            tipo_documento=cliente.tipo_documento,
-            numero_documento=cliente.numero_documento,
-            nombre_completo=cliente.nombre_completo,
-            telefono_enmascarado=enmascarar_telefono(cliente.telefono),
-            email_enmascarado=enmascarar_email(cliente.email)
+            encontrado=False,
+            fuente="manual",
+            numero_documento=doc_limpio,
+            mensaje=res_externo.get("error") or "No se encontraron registros. Completa los datos manualmente."
         )
 
     @classmethod
@@ -244,6 +287,7 @@ class PublicoService:
             largo_cm=Decimal(str(req.largo_cm)) if req.largo_cm else None,
             peso_volumetrico=Decimal(str(cotizacion.peso_volumetrico)),
             descripcion=req.descripcion,
+            direccion_recojo=req.direccion_recojo,
             direccion_entrega=req.direccion_entrega,
             monto_subtotal=subtotal,
             monto_descuento=Decimal("0.00"),
@@ -277,3 +321,45 @@ class PublicoService:
             estado="REGISTRADO",
             mensaje="Envío pre-registrado con éxito. Acérquese a la agencia de origen para despacharlo."
         )
+
+    @classmethod
+    def cancelar_pedido_web(
+        cls,
+        db: Session,
+        codigo_tracking: str,
+        req: CancelarPedidoRequest
+    ) -> CancelarPedidoResponse:
+        codigo_limpio = codigo_tracking.strip().upper()
+        
+        envio = db.execute(
+            select(Envio).where(Envio.codigo_tracking == codigo_limpio)
+        ).scalar_one_or_none()
+
+        if not envio:
+            raise ValueError(f"No se encontró el envío {codigo_limpio}.")
+
+        if envio.estado != "registrado" or envio.estado_pago != "pendiente":
+            raise ValueError("Solo se pueden cancelar pedidos pre-registrados que aún no han sido pagados ni procesados en agencia.")
+
+        if envio.remitente.numero_documento != req.numero_documento_remitente:
+            raise ValueError("El documento no coincide con el remitente registrado para este envío. Autorización denegada.")
+
+        envio.estado = "anulado"
+        envio.estado_pago = "anulado"
+        envio.actualizado_en = datetime.now(timezone.utc)
+
+        hito = HistorialEnvio(
+            envio_id=envio.id,
+            estado="anulado",
+            descripcion=f"Cancelado por el cliente (Web). Motivo: {req.motivo}",
+            ubicacion="Portal Web"
+        )
+        db.add(hito)
+        db.commit()
+
+        return CancelarPedidoResponse(
+            codigo_tracking=envio.codigo_tracking,
+            estado="ANULADO",
+            mensaje="El pre-registro de envío ha sido cancelado con éxito sin costo alguno."
+        )
+

@@ -11,7 +11,9 @@ from app.schemas.publico import (
     TrackingPublicoResponse,
     ClientePublicoResponse,
     RegistroPedidoPublicoRequest,
-    PedidoCreadoResponse
+    PedidoCreadoResponse,
+    CancelarPedidoRequest,
+    CancelarPedidoResponse
 )
 from app.services.publico_service import PublicoService
 
@@ -89,3 +91,24 @@ def registrar_pedido(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(ve)
         )
+
+@router.post(
+    "/pedidos/{codigo}/cancelar",
+    response_model=SuccessResponse[CancelarPedidoResponse],
+    summary="Cancelación de Pre-registro Web",
+    description="Permite al remitente cancelar voluntariamente un envío no pagado ni despachado."
+)
+def cancelar_pedido(
+    codigo: str,
+    req: CancelarPedidoRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        resultado = PublicoService.cancelar_pedido_web(db, codigo, req)
+        return SuccessResponse(success=True, data=resultado)
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(ve)
+        )
+
