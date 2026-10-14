@@ -9,11 +9,11 @@ Este directorio contiene las especificaciones **prácticas, técnicas y de arqui
 | N° | Funcionalidad | Estado de Documentación | Alcance Técnico Principal |
 |:---|:---|:---:|:---|
 | **01** | [Inicio de Sesión, JWT, 2FA y Roles (RBAC)](01-inicio-sesion-y-seguridad.md) | ✅ **Listo para Exposición** | Autenticación desacoplada, Bcrypt, PyOTP, JWT dual-scope, control de sesiones y tablas `usuarios` / `auditoria_seguridad`. |
-| **02** | **Flujo Integral de Envío Agencia - Agencia** | ⏳ *Siguiente en agenda* | Cotización, pesaje volumétrico, generación de orden, guía de remisión, manifiesto de despacho y arribo a destino. |
-| **03** | **Caja y Recepción en Mostrador** | 📝 *Planificado* | Cobros en ventanilla, arqueo ciego, emisión de comprobantes (Boleta/Factura) y control de turnos. |
-| **04** | **Almacén: Despacho a Ruta y Arribos** | 📝 *Planificado* | Lectura de bultos por código de barras, consolidación en camión, hoja de ruta y recepción en sede destino. |
-| **05** | **Courier y Reparto a Domicilio** | 📝 *Planificado* | Asignación de entregas de última milla, toma de foto de constancia y firma digital del receptor. |
-| **06** | **Tracking Público y Consulta de Estados** | 📝 *Planificado* | Consulta abierta por código de seguimiento, línea de tiempo inmutable e integración RENIEC/SUNAT. |
+| **02** | [Flujo Integral de Envío Agencia a Agencia](02-flujo-envio-agencia-agencia.md) | ✅ **Listo para Exposición** | Cadena de custodia (5 actores), máquina de estados, cubicaje IATA (L*A*H)/6000, tablas `envios` y `historial_envios`. |
+| **03** | [Caja, Recepción en Mostrador y Arqueo Ciego](03-caja-recepcion-y-mostrador.md) | ✅ **Listo para Exposición** | Cobros en ventanilla, balanza digital, recálculo de sobrepeso, arqueo ciego, desglose IGV 18% SUNAT y comprobantes. |
+| **04** | [Almacén: Despacho a Ruta y Arribos](04-almacen-despacho-y-arribos.md) | ✅ **Listo para Exposición** | Lectura con pistola láser continua, estiba en camión, precondiciones de estado y recepción en bodega destino. |
+| **05** | [Courier y Reparto a Domicilio (Última Milla)](05-courier-y-reparto-domicilio.md) | ✅ **Listo para Exposición** | Estado real del módulo: esquema DB, recargos de delivery (+S/ 12.00), rol RBAC y delimitación de pendientes (fotos/firma). |
+| **06** | [Tracking Público y Consulta RENIEC / SUNAT](06-tracking-publico-y-consultas.md) | ✅ **Listo para Exposición** | Consulta abierta por código de seguimiento, línea de tiempo inmutable, enmascaramiento PII y búsqueda híbrida fiscal. |
 
 ---
 

@@ -43,12 +43,18 @@ CargaExpressBackend/docs/
 │
 ├── flujos-exposicion/                               # 🎤 GUÍAS TÉCNICAS DE FLUJOS PARA EXPOSICIÓN
 │   ├── INDEX.md                                     # Mapa de exposición de todas las funcionalidades
-│   └── 01-inicio-sesion-y-seguridad.md              # Flujo técnico de Login, 2FA, JWT, DB y Roles
+│   ├── 01-inicio-sesion-y-seguridad.md              # Flujo técnico de Login, 2FA, JWT, DB y Roles
+│   ├── 02-flujo-envio-agencia-agencia.md            # Flujo técnico de Envíos Agencia-Agencia (Cadena de custodia)
+│   ├── 03-caja-recepcion-y-mostrador.md             # Flujo técnico de Caja, Arqueo Ciego y Balanza
+│   ├── 04-almacen-despacho-y-arribos.md             # Flujo técnico de Almacén, Despacho y Arribos
+│   ├── 05-courier-y-reparto-domicilio.md            # Flujo técnico de Courier y Reparto Última Milla (Implementado vs Pendiente)
+│   └── 06-tracking-publico-y-consultas.md           # Flujo técnico de Tracking Público y Consultas RENIEC/SUNAT
 │
 ├── arquitectura/                                    # 🏛️ ESPECIFICACIÓN VIVA DE ARQUITECTURA
 │   ├── 01-arquitectura-backend-capas.md             # Clean Layers: Routers, Services, Schemas y ORM
 │   ├── 02-modelo-datos-persistencia.md            # Diagrama ERD, 3NF, integridad referencial y PostgreSQL/SQLite
-│   └── 03-seguridad-autenticacion-rbac.md         # JWT, TOTP 2FA, invalidación sesion_version y RBAC
+│   ├── 03-seguridad-autenticacion-rbac.md         # JWT, TOTP 2FA, invalidación sesion_version y RBAC
+│   └── 04-guia-backup-restauracion-sqlite.md       # Backup SQL dump, copia binaria y restauración segura
 │
 ├── negocio/                                         # 📋 REGLAS DE NEGOCIO Y POLÍTICAS (BUSINESS RULES)
 │   ├── 01-politicas-cancelaciones-reembolsos.md     # BR-CAN: Cancelaciones, Notas de Crédito y Reembolsos
