@@ -41,6 +41,10 @@ CargaExpressBackend/docs/
 ├── README.md                                        # Índice general y metodología SDD (este archivo)
 ├── checklist-seguridad-migracion.md                 # Matriz de verificación obligatoria por endpoint
 │
+├── flujos-exposicion/                               # 🎤 GUÍAS TÉCNICAS DE FLUJOS PARA EXPOSICIÓN
+│   ├── INDEX.md                                     # Mapa de exposición de todas las funcionalidades
+│   └── 01-inicio-sesion-y-seguridad.md              # Flujo técnico de Login, 2FA, JWT, DB y Roles
+│
 ├── arquitectura/                                    # 🏛️ ESPECIFICACIÓN VIVA DE ARQUITECTURA
 │   ├── 01-arquitectura-backend-capas.md             # Clean Layers: Routers, Services, Schemas y ORM
 │   ├── 02-modelo-datos-persistencia.md            # Diagrama ERD, 3NF, integridad referencial y PostgreSQL/SQLite
@@ -66,6 +70,10 @@ CargaExpressBackend/docs/
 │   ├── 04-auditoria-y-base-de-datos.md              # Trazabilidad forense y mitigación de fugas
 │   ├── 05-diseno-base-de-datos-auditoria-jwt.md     # Especificación DDL y normalización 3NF
 │   └── 06-auditoria-dast-owasp-zap.md              # Informe de auditoría DAST con OWASP ZAP y remediaciones SRI/CSP
+│
+├── pruebas/                                         # 🧪 PRUEBAS DE SOFTWARE Y CONTROL DE CALIDAD
+│   ├── 01-pruebas-software-superadas.md            # Casos de prueba superados con éxito (Funcionales, DAST, E2E)
+│   └── 02-pruebas-pendientes-futuras-fases.md      # Pruebas pendientes, limitaciones y roadmap de QA
 │
 └── sprints/                                         # 🏃 HISTORIAL Y BITÁCORA DE ENTREGAS
     ├── sprint-01-autenticacion-mfa.md               # Autenticación, JWT y segundo factor TOTP

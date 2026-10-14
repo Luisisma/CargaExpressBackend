@@ -4,7 +4,6 @@ from sqlalchemy import Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
-
 class Agencia(Base):
     __tablename__ = "agencias"
 
