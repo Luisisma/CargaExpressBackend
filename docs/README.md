@@ -48,7 +48,12 @@ CargaExpressBackend/docs/
 │   ├── 03-caja-recepcion-y-mostrador.md             # Flujo técnico de Caja, Arqueo Ciego y Balanza
 │   ├── 04-almacen-despacho-y-arribos.md             # Flujo técnico de Almacén, Despacho y Arribos
 │   ├── 05-courier-y-reparto-domicilio.md            # Flujo técnico de Courier y Reparto Última Milla (Implementado vs Pendiente)
-│   └── 06-tracking-publico-y-consultas.md           # Flujo técnico de Tracking Público y Consultas RENIEC/SUNAT
+│   ├── 06-tracking-publico-y-consultas.md           # Flujo técnico de Tracking Público y Consultas RENIEC/SUNAT
+│   ├── 07-gestion-usuarios-y-personal.md            # Flujo técnico de Gestión de Personal, Roles, 2FA y Revocación
+│   ├── 08-gestion-sedes-y-agencias.md               # Flujo técnico de Sedes y Agencias Provinciales
+│   ├── 09-directorio-gestion-clientes.md            # Flujo técnico de Directorio y Gestión de Clientes
+│   ├── 10-dashboard-gerencial-kpis.md               # Flujo técnico de Dashboard, Métricas SQL y KPIs
+│   └── 11-recuperacion-password-email.md            # Flujo técnico de Recuperación de Claves por Mailtrap
 │
 ├── arquitectura/                                    # 🏛️ ESPECIFICACIÓN VIVA DE ARQUITECTURA
 │   ├── 01-arquitectura-backend-capas.md             # Clean Layers: Routers, Services, Schemas y ORM
