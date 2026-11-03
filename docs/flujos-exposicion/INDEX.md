@@ -9,7 +9,7 @@ Este directorio contiene las especificaciones **prácticas, técnicas y de arqui
 | N° | Funcionalidad | Estado de Documentación | Alcance Técnico Principal |
 |:---|:---|:---:|:---|
 | **01** | [Inicio de Sesión, JWT, 2FA y Roles (RBAC)](01-inicio-sesion-y-seguridad.md) | ✅ **Listo para Exposición** | Autenticación desacoplada, Bcrypt, PyOTP, JWT dual-scope, control de sesiones y tablas `usuarios` / `auditoria_seguridad`. |
-| **02** | [Flujo Integral de Envío Agencia a Agencia](02-flujo-envio-agencia-agencia.md) | ✅ **Listo para Exposición** | Cadena de custodia (5 actores), máquina de estados, cubicaje IATA (L*A*H)/6000, tablas `envios` y `historial_envios`. |
+| **02** | [Flujo Integral de Envío Agencia a Agencia](02-flujo-envio-agencia-agencia.md) | ✅ **Listo para Exposición** | Cadena de custodia (5 actores), máquina de estados, cubicaje IATA (L*A*H)/6000, declaración extraordinaria de siniestros (BR-ENV-06), tablas `envios` y `historial_envios`. |
 | **03** | [Caja, Recepción en Mostrador y Arqueo Ciego](03-caja-recepcion-y-mostrador.md) | ✅ **Listo para Exposición** | Cobros en ventanilla, balanza digital, recálculo de sobrepeso, arqueo ciego, desglose IGV 18% SUNAT y comprobantes. |
 | **04** | [Almacén: Despacho a Ruta y Arribos](04-almacen-despacho-y-arribos.md) | ✅ **Listo para Exposición** | Lectura con pistola láser continua, estiba en camión, precondiciones de estado y recepción en bodega destino. |
 | **05** | [Courier y Reparto a Domicilio (Última Milla)](05-courier-y-reparto-domicilio.md) | ✅ **Listo para Exposición** | Estado real del módulo: esquema DB, recargos de delivery (+S/ 12.00), rol RBAC y delimitación de pendientes (fotos/firma). |
@@ -19,6 +19,8 @@ Este directorio contiene las especificaciones **prácticas, técnicas y de arqui
 | **09** | [Directorio y Gestión de Clientes](09-directorio-gestion-clientes.md) | ✅ **Listo para Exposición** | Padrón unificado de clientes (3NF), cálculo dinámico de volumen de envíos y búsqueda indexada por DNI/RUC. |
 | **10** | [Dashboard Gerencial, KPIs y Métricas](10-dashboard-gerencial-kpis.md) | ✅ **Listo para Exposición** | Agregaciones SQL (`COUNT`, `SUM`), facturación en tiempo real, KPIs del turno y encomiendas recientes. |
 | **11** | [Recuperación de Contraseñas por Email](11-recuperacion-password-email.md) | ✅ **Listo para Exposición** | Tokens de 15 min (scope `password_reset`), integración Mailtrap API, anti-enumeración y revocación `sesion_version`. |
+| **12** | [Guías de Remisión Electrónicas (GRE-T) y Manifiestos](04-guias-de-remision-y-manifiestos.md) | ✅ **Listo para Exposición** | Normativa SUNAT Res. 123-2022/SUNAT, manifiesto consolidado SUTRAN, impresión aislada sin hojas en blanco y QR oficial. |
+| **13** | [Notificaciones Transaccionales por Correo Electrónico](05-notificaciones-y-correo-transaccional.md) | ✅ **Listo para Exposición** | Motor híbrido resiliente (Gmail STARTTLS puerto 587, Mailtrap Sandbox), codificación UTF-8 RFC 2047 y trazabilidad de eventos. |
 
 ---
 

@@ -61,23 +61,23 @@ Cada agencia:
 
 ---
 
-## 3. Estado de Implementación: Lo que SÍ está y lo Pendiente
-
-Para sustentar con total transparencia técnica:
+## 3. Estado de Implementación: 100% Operativo y CRUD Conectado E2E
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │                         ESTADO TÉCNICO DEL MÓDULO AGENCIAS                             │
-├────────────────────────────────────────┬───────────────────────────────────────────────┤
-│  🟢 IMPLEMENTADO Y OPERATIVO           │  🟡 PENDIENTE / EN ROADMAP                    │
-├────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ • Modelo relacional 3NF 'agencias'     │ • Formulario interactivo en Frontend para que │
-│ • Restricción de clave foránea en DB   │   el Admin cree/edite agencias desde la web   │
-│   (envios.origen_id y destino_id)      │ • Endpoint administrativo POST/PUT de sedes   │
-│ • Endpoint 'GET /publico/agencias'     │ • Georreferenciación con coordenadas lat/long │
-│ • Directorio visual en AgenciasList    │                                               │
-│ • Sedes oficiales sembradas en DB      │                                               │
-└────────────────────────────────────────┴───────────────────────────────────────────────┘
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  🟢 IMPLEMENTADO Y OPERATIVO E2E (FastAPI + React)                                     │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ • Modelo relacional 3NF 'agencias' con Ubigeo departamental, provincial y distrital    │
+│ • Restricciones de clave foránea en DB (envios.agencia_origen_id y destino_id)         │
+│ • Endpoint público 'GET /api/v1/publico/agencias' para selectores de cotizador y web   │
+│ • Endpoint administrativo CRUD 'POST / PUT / PATCH /api/v1/agencias' (RBAC Admin)      │
+│ • Servicio de dominio 'AgenciaService' con auditoría inmutable de altas y cambios      │
+│ • Interfaz administrativa en AgenciasList.jsx con modales de creación, edición rápida │
+│   y alternancia reactiva de estado (habilitado / deshabilitado)                        │
+│ • Catálogo ampliado de 84 agencias a nivel nacional (Sedes troncales y provinciales)   │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -123,17 +123,22 @@ En la base de datos relacional ([`cargaexpress.db`](file:///c:/Users/User/Docume
 ### Backend:
 1. [app/models/agencia.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/models/agencia.py):
    * Modelo SQLAlchemy `Agencia` con campos de ubicación geográfica (departamento, provincia, distrito, dirección) y `codigo_agencia` único.
-2. [app/api/v1/endpoints/publico.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/api/v1/endpoints/publico.py):
-   * Línea 24: Endpoint `GET /agencias` que expone la lista de sedes operativas.
-3. [app/services/publico_service.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/services/publico_service.py):
-   * Línea 30: Método `listar_agencias_activas()` que consulta `Agencia.estado == 'habilitado'`.
+2. [app/schemas/agencia.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/schemas/agencia.py):
+   * Contratos tipados Pydantic v2: `AgenciaCreateRequest`, `AgenciaUpdateRequest` y `AgenciaResponse`.
+3. [app/services/agencia_service.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/services/agencia_service.py):
+   * Capa de dominio: `listar()`, `crear()`, `actualizar()` y `toggle_estado()` con auditoría en `AuditoriaOperaciones`.
+4. [app/api/v1/endpoints/agencias.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/api/v1/endpoints/agencias.py):
+   * Controlador REST administrativo (`GET`, `POST`, `PUT`, `PATCH`) protegido por `require_role(["ADMINISTRADOR"])`.
+5. [app/api/v1/endpoints/publico.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/api/v1/endpoints/publico.py):
+   * Endpoint público de solo lectura para selectores de cotización y despacho.
 
 ### Frontend:
 1. [src/pages/admin/agencias/AgenciasList.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/agencias/AgenciasList.jsx):
-   * Vista de catálogo con buscador en vivo por departamento, provincia y dirección.
-   * Renderizado de tarjetas con códigos de agencia, badges de estado y botones de geolocalización.
-2. [src/services/publicService.js](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/services/publicService.js):
-   * Método `getAgencias()` consumido por los módulos de cotización, admisión y despacho.
+   * Directorio visual con filtros reactivos por departamento y estado operativo.
+   * Modales interactivos para registrar nuevas sedes y modificar agencias existentes.
+   * Botón de alternancia de estado operativo (Activar / Desactivar).
+2. [src/services/agenciaService.js](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/services/agenciaService.js):
+   * Cliente HTTP que consume los endpoints administrativos `/api/v1/agencias`.
 
 ---
 

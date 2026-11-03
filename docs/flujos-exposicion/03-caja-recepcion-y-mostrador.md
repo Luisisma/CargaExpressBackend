@@ -80,14 +80,22 @@ sequenceDiagram
 * Un cajero no puede recepcionar encomiendas ni registrar cobros si no tiene un turno de caja formalmente abierto.
 * Esto garantiza que todo dinero que ingrese a la empresa esté asociado a un responsable y una gaveta física auditada.
 
-### B. Regla `BR-TAR-02`: Inspección Física y Cobro de Reintegros
+### B. Regla `BR-TAR-02`: Inspección Física, Cubicaje y Cobro de Reintegros
 * **El pre-registro web es una estimación del cliente.**
-* En mostrador, el cajero ingresa los datos comprobados:
+* En mostrador, el cajero ingresa los datos comprobados con validación obligatoria:
+  * **Peso físico balanza:** Mínimo $> 0$ kg (ej. $0.1$ kg).
+  * **Dimensiones bulto:** Largo, Ancho y Alto con mínimo obligatorio de $1$ cm. Se prohíbe el valor `0` o campos vacíos para evitar distorsiones volumétricas y errores 422.
   * $\text{Peso Volumétrico} = \frac{\text{Largo} \times \text{Ancho} \times \text{Alto}}{6000}$
   * $\text{Peso Liquidable} = \max(\text{Peso Balanza}, \text{Peso Volumétrico})$
   * $\text{Tarifa Oficial} = 8.00 + (\text{Peso Liquidable} \times 2.50)$
-* **Si el cliente declaró menos peso en la web:** El sistema suma la diferencia al total y el cajero cobra el saldo en mostrador.
+* **Si el cliente declaró menos peso en la web:** 
+  * Si ya estaba pagado online, el sistema activa automáticamente el modo **Reintegro por Exceso de Peso**, cobrando únicamente la diferencia (ej. $+\text{S/ } 2.50$).
+  * Si estaba pendiente en caja, el cajero cobra el nuevo total liquidado oficial.
 * **Si el cliente sobredeclaró peso:** Por política comercial de encomiendas, se mantiene el cobro web sin devolución parcial.
+* **Diseño UI/UX POS Mostrador (Zero-Scroll):**
+  * Interfaz en 2 columnas: panel de medición a la izquierda y resumen de liquidación fijo (*sticky*) a la derecha.
+  * Recálculo en tiempo real sin recargar página.
+  * Bloqueo reactivo del botón de cobro e indicación visual en rojo si faltan medidas.
 
 ### C. Regla `BR-CAJ-02`: Medios de Pago Permitidos
 1. **Efectivo (`efectivo`):** Dinero en moneda nacional que ingresa a la gaveta.
@@ -103,6 +111,17 @@ Al cerrar caja:
   * $\text{Diferencia} = 0$: **Conforme (Cuadre Exacto)**.
   * $\text{Diferencia} > 0$: **Sobrante de Caja** (Queda asentado contablemente y se entrega al supervisor).
   * $\text{Diferencia} < 0$: **Faltante de Caja** (Genera evento de auditoría y se descuenta o repone según política interna).
+
+### E. Regla `BR-COB-04` y `BR-CAJ-05`: Protocolo de Sobrepagos Digitales y Mitigación PLAFT (SBS/UIF)
+Si un cliente transfiere por error un monto mayor al liquidado en ventanilla (Yape / Plin):
+* **Tope Máximo en Efectivo:** El cajero solo puede devolver hasta **S/ 20.00** en efectivo físico como vuelto menor de sencillo.
+* **Bloqueo para Excesos > S/ 20.00:** Por normativa de la Unidad de Inteligencia Financiera (**Resolución SBS N° 789-2018**) y la Ley de Bancarización (**Ley N° 28194**), está **terminantemente prohibido entregar efectivo de la gaveta**:
+  1. **Evita la "Bancarización Inversa":** Impide que personas inescrupulosas usen dinero de origen ilícito o cuentas vulneradas para retirar efectivo limpio en agencias.
+  2. **Protege la liquidez de la sede:** Impide que el fondo de caja chica se quede sin sencillo para la atención diaria.
+* **Vías de Devolución Oficial:**
+  * **Re-Yapeo Digital:** Extorno digital revertido exclusivamente hacia el mismo número y titular de la cuenta bancaria de origen.
+  * **Saldo a Favor:** Acreditación del exceso en la cuenta del cliente (`clientes.saldo_credito`) para futuros envíos.
+  * **Montos atípicos (> S/ 500.00):** Se abre expediente con DNI y voucher original, tramitándose la devolución por transferencia bancaria CCI en 24-48 horas por Tesorería.
 
 ---
 
@@ -150,6 +169,7 @@ POST /api/v1/envios/CE-2026-00003/recepcionar
   "largo_real_cm": 35.0,
   "ancho_real_cm": 25.0,
   "alto_real_cm": 20.0,
+  "forma_pago": "efectivo",
   "observaciones": "Caja debidamente sellada y embalada con cinta de seguridad."
 }
 ```
@@ -167,11 +187,13 @@ POST /api/v1/envios/CE-2026-00003/recepcionar
 ## 6. Módulos de Código Exactos para Mostrar en la Exposición
 
 ### Backend:
-1. [app/services/envio_service.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/services/envio_service.py):
-   * Líneas 9-77: Método `recepcionar()` (Recálculo en servidor de peso liquidable, ajuste de subtotal e IGV, cambio a `'pagado'` y generación de hito).
-2. [app/api/v1/endpoints/envios.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/api/v1/endpoints/envios.py):
-   * Línea 195: Endpoint `/{identificador}/recepcionar` protegido por `require_role(["CAJERO", "ADMINISTRADOR", "SUPERVISOR", "ALMACEN"])`.
-3. [app/models/envio.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/models/envio.py):
+1. [app/services/envio_service.py](file:///c:/Users/User/Documents/VSC-Integrador\CargaExpressBackend\app\services\envio_service.py):
+   * Método `recepcionar()` (Recálculo en servidor de peso liquidable, ajuste de subtotal e IGV, cambio a `'pagado'` y generación de hito con `BackgroundTasks`).
+2. [app/services/caja_service.py](file:///c:/Users/User/Documents/VSC-Integrador\CargaExpressBackend\app\services\caja_service.py):
+   * Capa de servicio de dominio financiero que aísla `obtener_resumen()`, `registrar_arqueo()` (protocolo ciego) y `gestionar_sobrepago()` (PLAFT).
+3. [app/api/v1/endpoints/caja.py](file:///c:/Users/User/Documents/VSC-Integrador\CargaExpressBackend\app\api\v1\endpoints\caja.py):
+   * Controlador REST delgado que expone `/resumen`, `/arqueo` y `/gestionar-sobrepago`.
+4. [app/models/envio.py](file:///c:/Users/User/Documents/VSC-Integrador\CargaExpressBackend\app\models\envio.py):
    * Líneas 35-54: Columnas financieras `monto_subtotal`, `monto_igv`, `precio_envio`, `estado_pago`, `tipo_documento`.
 
 ### Frontend:
@@ -192,3 +214,5 @@ POST /api/v1/envios/CE-2026-00003/recepcionar
 | **¿Qué es el Arqueo Ciego y por qué es una buena práctica?** | *"Es un control interno antifraude. Si el cajero ve en pantalla que debe tener S/ 1,500, podría ocultar un sobrante o manipular el dinero. Al ser 'ciego', el cajero declara primero lo que tiene en físico y el sistema luego revela si hay coincidencia exacta, sobrante o faltante."* |
 | **¿Cómo se maneja el comprobante de pago ante SUNAT?** | *"El sistema identifica el tipo de documento del remitente: si tiene RUC, clasifica automáticamente el pedido como Factura; si tiene DNI, como Boleta de Venta. Aplica el cálculo de ley del 18% de IGV separando base imponible e impuesto."* |
 | **¿Qué pasa con los envíos que pagan en destino (contraentrega)?** | *"Durante la admisión en origen, el paquete se recepciona con `estado_pago = 'pendiente'` y `lugar_pago = 'destino'`. Cuando arriba a la agencia destino y el destinatario recoge el paquete con su DNI, el método `EnvioService.entregar()` realiza el cobro formal en ventanilla y lo pasa a `'pagado'`."* |
+| **¿Qué ocurre si el cliente sobrepaga por Yape (ej. S/ 200 en vez de S/ 25) y exige el vuelto en efectivo en mostrador? (Pregunta trampa)** | *"Nuestra política de seguridad (`BR-COB-04`) prohíbe tajantemente devolver más de S/ 20.00 en efectivo físico. Nos alineamos a la **Resolución SBS N° 789-2018 (PLAFT/UIF)** y a la **Ley N° 28194 de Bancarización**: entregar efectivo por abonos digitales es una tipología de 'bancarización inversa' para lavar dinero de cuentas hackeadas. Además, descapitalizaría el sencillo de la agencia. El sistema fuerza la devolución por el mismo canal (re-yapeo al mismo titular de la cuenta de origen) o lo acredita como saldo a favor en su cuenta de cliente."* |
+| **¿Y si el cliente muestra una captura de pantalla de Yape falsa o adulterada?** | *"En ventanilla se aplica la regla de oro: **'Cero confianza en la pantalla del celular del cliente'**. El cajero valida exclusivamente la alerta en el terminal/teléfono receptor de la agencia y digita en el sistema el número de operación oficial de 6 dígitos. Si no figura en el estado de cuenta corporativo, el paquete no se recepciona."* |

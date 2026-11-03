@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import List, Union, Optional
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -28,7 +28,16 @@ class Settings(BaseSettings):
     MAX_LOGIN_ATTEMPTS: int = 5
     LOCKOUT_MINUTES: int = 15
 
-    # Mailtrap & Notificaciones por Correo
+    # Notificaciones por Correo Electrónico Real (Gmail SMTP / STARTTLS)
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: int = 587
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_FROM_NAME: str = "CargaExpress Perú"
+    SMTP_FROM_EMAIL: Optional[str] = None
+    EMAIL_ENABLED: bool = True
+
+    # Mailtrap & Notificaciones por Correo (Sandbox Fallback)
     MAILTRAP_API_TOKEN: str = ""
     MAILTRAP_INBOX_ID: int = 4950980
     FRONTEND_URL: str = "http://localhost:5173"

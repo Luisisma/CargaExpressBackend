@@ -74,7 +74,7 @@ El backend debe implementar el principio de **Mínimo Privilegio** y **Defensa e
 1. **Cálculo de Precios e Importes:** El cliente web nunca envía el precio final a cobrar en un envío. El backend debe ejecutar la fórmula de tarifario oficial:
    $$\text{Peso Facturable} = \max\left(\text{Peso Físico}, \frac{L \times A \times H}{6000}\right)$$
    y multiplicar por la tarifa base de la ruta entre agencias en `pricing_service.py`.
-2. **Generación de Códigos de Seguimiento:** Los códigos de tracking (ej. `CE-2026-XXXXX`) deben ser generados de manera controlada y transaccional, evitando colisiones y patrones fácilmente predecibles sin validación.
+2. **Generación de Códigos de Seguimiento:** Los códigos de tracking deben ser generados criptográficamente mediante el módulo `secrets` y alfabeto Base32 de Crockford (`CE-YYYY-XXXXXXX`), garantizando no correlatividad, ausencia de IDOR/enumeración masiva (OWASP API1/API3) y control transaccional de no colisión (34 mil millones de combinaciones anuales).
 
 ---
 

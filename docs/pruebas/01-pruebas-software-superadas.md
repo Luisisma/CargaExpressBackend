@@ -22,6 +22,7 @@ Este documento formaliza la batería completa de pruebas superadas exitosamente 
 | **`TC-RBAC-01`**| Seguridad / Autorización| Control RBAC Mínimo Privilegio| Bloquear endpoints no autorizados según rol del JWT. | Rechazo con `HTTP 403 Forbidden` a roles no autorizados. | ✅ **EXITOSO** |
 | **`TC-SEC-01`** | Seguridad Dinámica | Auditoría DAST (OWASP ZAP) | Escaneo pasivo y activo sin fallos críticos. | 0 Alertas Altas, CSP Level 3 y SRI en Swagger UI. | ✅ **EXITOSO** |
 | **`TC-PII-01`** | Seguridad / Privacidad | Enmascaramiento de Datos | Proteger DNI, nombres y teléfonos en rastreo público. | Datos sensibles ocultos bajo formato `***123` / `J*** P***`. | ✅ **EXITOSO** |
+| **`TC-SEC-02`** | Seguridad Criptográfica | Generación Anti-Enumeración Tracking | Generar tracking impredecible Base32 Crockford (34B/año). | 0 colisiones en 50 iteraciones, formato seguro y no correlativo (OWASP API1/API3). | ✅ **EXITOSO** |
 | **`TC-SES-01`** | Seguridad de Sesión | Invalidación Reactiva JWT | Cerrar sesión invalidando tokens anteriores en backend. | Incremento de `sesion_version` revoca de inmediato el JWT. | ✅ **EXITOSO** |
 
 ---
@@ -69,3 +70,12 @@ Este documento formaliza la batería completa de pruebas superadas exitosamente 
   - **Resultado:** Backend responde con `HTTP 403 Forbidden` y el Frontend oculta reactivamente las tarjetas financieras en el Dashboard.
 * **`TC-PII-01`: Privacidad y Protección de Datos Personales:**
   - Endpoint público `/api/v1/publico/tracking/{codigo}` retorna datos de remitente y destinatario ofuscados (ej. `987***321`, `L*** M***`), garantizando cumplimiento de la Ley de Protección de Datos Personales (Ley N° 29733).
+
+### 6. Pruebas de Gestión de Sesiones JWT y Control de Expiración
+* **`TC-SES-01`: Intercepción Proactiva de Token Caducado en Navegador:**
+  - **Escenario:** Usuario accede con token expirado en `localStorage` a `/admin/dashboard`.
+  - **Resultado:** El layout administrativo intercepta la expiración sin renderizar hijos, purga `localStorage` y redirige a `/auth/login?expired=1` con aviso informativo.
+* **`TC-SES-02`: Manejo Reactivo de Error HTTP 401 (Sesión Revocada en Servidor):**
+  - **Escenario:** El backend responde 401 a una solicitud de API por versión de sesión incrementada o token revocado.
+  - **Resultado:** El cliente centralizado `apiClient.js` captura el 401, emite el evento global `ce_session_expired`, limpia el contexto y redirige a login inmediatamente.
+

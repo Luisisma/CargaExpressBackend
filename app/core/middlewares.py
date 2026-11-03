@@ -23,18 +23,29 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "base-uri 'self'; "
-            "form-action 'self'; "
-            "object-src 'none'; "
-            "frame-ancestors 'none'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "img-src 'self' data: https://fastapi.tiangolo.com; "
-            "font-src 'self' data:; "
-            "connect-src 'self' http://127.0.0.1:8000 http://localhost:5173;"
-        )
+        # Adaptar CSP para documentación interactiva en desarrollo
+        if request.url.path in ("/docs", "/redoc", "/openapi.json"):
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self' https://cdn.jsdelivr.net; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://fastapi.tiangolo.com; "
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "img-src 'self' data: https://fastapi.tiangolo.com; "
+                "font-src 'self' data: https://cdn.jsdelivr.net; "
+                "connect-src *;"
+            )
+        else:
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "base-uri 'self'; "
+                "form-action 'self'; "
+                "object-src 'none'; "
+                "frame-ancestors 'none'; "
+                "script-src 'self' 'unsafe-inline'; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data: https://fastapi.tiangolo.com; "
+                "font-src 'self' data:; "
+                "connect-src 'self' http://127.0.0.1:8000 http://localhost:8000 http://localhost:5173 http://127.0.0.1:5173;"
+            )
         
         # HSTS en conexiones seguras
         if request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https":

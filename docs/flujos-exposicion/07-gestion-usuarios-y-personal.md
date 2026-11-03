@@ -160,7 +160,8 @@ Cada creación, edición, activación o enrolamiento 2FA genera una fila inmutab
 ### Frontend:
 1. [src/pages/admin/usuarios/UsuariosList.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/usuarios/UsuariosList.jsx):
    * Tabla interactiva con badges de roles, agencias, estado activo y 2FA.
-   * Modal dinámico de creación/edición con campos condicionales.
+   * Modal dinámico de creación/edición con campos condicionales y generador reactivo de contraseñas seguras.
+   * **Desplegable Normalizado de Licencias MTC:** Reemplazo de inputs libres de texto por un selector con las categorías oficiales del Ministerio de Transportes y Comunicaciones (MTC): `A-IIIc` (Carga Pesada / Articulados), `A-IIIb`, `A-IIIa`, `A-IIb`, `A-IIa`, `A-I`, `B-IIb` (Motos / Courier) y `B-IIc` (Motofurgones). Incluye sugerencia automática por rol y compatibilidad retroactiva con valores manuales previos.
    * Modal visual con imagen QR para escaneo con Google Authenticator.
 2. [src/services/usuarioService.js](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/services/usuarioService.js):
    * Llamadas `getUsuarios()`, `crearUsuario()`, `actualizarUsuario()`, `toggleActivo()`, `toggle2FA()`.

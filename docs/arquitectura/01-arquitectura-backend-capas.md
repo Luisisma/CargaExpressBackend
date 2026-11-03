@@ -51,6 +51,8 @@ A diferencia de las arquitecturas monolíticas desorganizadas, el backend actúa
 │                CAPA 3: SERVICIOS Y REGLAS DE NEGOCIO                   │
 │                       [app/services/*.py]                              │
 │  - EnvioService: Recepción en balanza, despacho, arribo, entrega       │
+│  - CajaService: Arqueo ciego, cuadre de turnos, gestión de sobrepagos   │
+│  - AgenciaService: CRUD de agencias, validación y auditoría de sedes   │
 │  - PublicoService: Motor tarifario volumétrico, tracking con PII mask   │
 │  - AuthService: Criptografía Argon2/Bcrypt, 2FA TOTP, sesion_version   │
 │  - AuditService: Inserción en auditoria_seguridad y operaciones        │
@@ -105,6 +107,9 @@ CargaExpressBackend/app/
 └── services/                   # Dominio y Reglas de Negocio puras
     ├── auth_service.py         # Lógica de credenciales, rate limiting y 2FA
     ├── envio_service.py        # Transiciones de estado del paquete y pesaje
+    ├── caja_service.py         # Arqueo ciego, cuadre de caja y prevención PLAFT (SBS)
+    ├── courier_service.py      # Reparto última milla y captura de evidencias
+    ├── pago_service.py         # Validación HMAC de pasarela y conciliación
     ├── publico_service.py      # Lógica de tarifario, tracking seguro y pedidos
     ├── email_service.py        # Despacho de notificaciones vía Mailtrap/SMTP
     ├── audit_service.py        # Registro automático de eventos auditables

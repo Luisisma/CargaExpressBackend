@@ -1,5 +1,7 @@
+import logging
 import random
 import re
+import secrets
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import List, Optional, Tuple
@@ -10,6 +12,9 @@ from app.models.agencia import Agencia
 from app.models.cliente import Cliente
 from app.models.envio import Envio, HistorialEnvio
 from app.services.consulta_documento_service import ConsultaDocumentoService
+from app.services.email_service import enviar_correo_preregistro, enviar_correo_preregistro_destinatario
+
+logger = logging.getLogger(__name__)
 from app.schemas.publico import (
     CotizacionRequest,
     CotizacionResponse,
@@ -57,6 +62,31 @@ def enmascarar_email(email: Optional[str]) -> Optional[str]:
     return f"{usuario_mask}@{dominio}"
 
 
+TRACKING_ALPHABET = "23456789ABCDEFGHJKMNPQRSTVWXYZ"
+
+
+def generar_codigo_tracking_seguro(db: Session, anio: Optional[int] = None, longitud: int = 7) -> str:
+    """
+    Genera un código de tracking seguro, impredecible y no correlativo (OWASP API1 / API3).
+    Formato: CE-YYYY-XXXXXXX (ej. CE-2026-K9M4P2X)
+    Espacio de combinaciones: 32^7 = 34,359,738,368 posibilidades por año.
+    Garantiza unicidad atómica contra la base de datos mediante reintentos.
+    """
+    if not anio:
+        anio = datetime.now(timezone.utc).year
+
+    for _ in range(10):
+        sufijo = "".join(secrets.choice(TRACKING_ALPHABET) for _ in range(longitud))
+        codigo = f"CE-{anio}-{sufijo}"
+        existe = db.execute(select(Envio.id).where(Envio.codigo_tracking == codigo)).scalar_one_or_none()
+        if not existe:
+            return codigo
+
+    # Fallback ultra improbable ante colisiones
+    sufijo_extra = "".join(secrets.choice(TRACKING_ALPHABET) for _ in range(longitud + 2))
+    return f"CE-{anio}-{sufijo_extra}"
+
+
 class PublicoService:
 
     @staticmethod
@@ -72,15 +102,34 @@ class PublicoService:
         """
         Motor oficial de cotización de CargaExpress Perú.
         Cálculo seguro en backend sin manipulación de tarifas en cliente.
+        Diferenciación de tarifas según tipo de paquete (Sobre, Caja, Paquete, Saco).
         """
-        peso_vol = round((req.largo_cm * req.ancho_cm * req.alto_cm) / 6000.0, 2)
-        peso_liquidable = max(round(req.peso_kg, 2), peso_vol)
+        tipo_paq = (req.tipo_paquete or "caja").lower()
+        if tipo_paq == "sobre":
+            tarifa_base = 5.00  # Tarifa económica plana de documentos
+            recargo_tipo_paquete = 0.00
+            descripcion_tipo_paquete = "Tarifa especial Documentos / Sobre"
+            # Los sobres no son cúbicos; limitamos la altura volumétrica
+            peso_vol = round((req.largo_cm * req.ancho_cm * min(req.alto_cm, 3.0)) / 6000.0, 2)
+            peso_liquidable = max(round(req.peso_kg, 2), peso_vol)
+        elif tipo_paq == "saco":
+            tarifa_base = 8.00  # Tarifa base provincial
+            recargo_tipo_paquete = 4.00  # Recargo por estiba y volumen de almacén
+            descripcion_tipo_paquete = "Recargo de estiba (Saco / Mercadería voluminosa)"
+            peso_vol = round((req.largo_cm * req.ancho_cm * req.alto_cm) / 6000.0, 2)
+            peso_liquidable = max(round(req.peso_kg, 2), peso_vol)
+        else:
+            # "caja" o "paquete" (estándar provincial)
+            tarifa_base = 8.00
+            recargo_tipo_paquete = 0.00
+            descripcion_tipo_paquete = "Tarifa estándar provincial"
+            peso_vol = round((req.largo_cm * req.ancho_cm * req.alto_cm) / 6000.0, 2)
+            peso_liquidable = max(round(req.peso_kg, 2), peso_vol)
 
-        tarifa_base = 8.00
         tarifa_peso = round(peso_liquidable * 2.50, 2)
         recargo_dom = 12.00 if req.tipo_envio in ["agencia_domicilio", "domicilio_domicilio"] else 0.00
         recargo_recojo = 15.00 if req.tipo_envio in ["domicilio_agencia", "domicilio_domicilio"] else 0.00
-        total = round(tarifa_base + tarifa_peso + recargo_dom + recargo_recojo, 2)
+        total = round(tarifa_base + tarifa_peso + recargo_tipo_paquete + recargo_dom + recargo_recojo, 2)
 
         return CotizacionResponse(
             peso_fisico=round(req.peso_kg, 2),
@@ -88,6 +137,8 @@ class PublicoService:
             peso_liquidable=peso_liquidable,
             tarifa_base=tarifa_base,
             tarifa_peso_adicional=tarifa_peso,
+            recargo_tipo_paquete=recargo_tipo_paquete,
+            descripcion_tipo_paquete=descripcion_tipo_paquete,
             recargo_domicilio=recargo_dom,
             recargo_recojo=recargo_recojo,
             precio_total=total
@@ -255,6 +306,7 @@ class PublicoService:
                 agencia_origen_id=req.agencia_origen_id,
                 agencia_destino_id=req.agencia_destino_id,
                 tipo_envio=req.tipo_envio,
+                tipo_paquete=req.tipo_paquete,
                 peso_kg=req.peso_kg,
                 largo_cm=req.largo_cm or 20.0,
                 ancho_cm=req.ancho_cm or 20.0,
@@ -267,14 +319,13 @@ class PublicoService:
         subtotal = round(precio_total / Decimal("1.18"), 2)
         igv = round(precio_total - subtotal, 2)
 
-        # 4. Generar código correlativo de tracking seguro: CE-YYYY-NNNNN
+        # 4. Generar código de tracking seguro y no correlativo (OWASP API1 / API3)
         anio_actual = datetime.now(timezone.utc).year
-        total_envios_anio = db.execute(select(func.count(Envio.id))).scalar() or 0
-        correlativo = f"CE-{anio_actual}-{total_envios_anio + 1:05d}"
+        codigo_seguro = generar_codigo_tracking_seguro(db, anio=anio_actual, longitud=7)
 
         # 5. Crear el registro del envío
         nuevo_envio = Envio(
-            codigo_tracking=correlativo,
+            codigo_tracking=codigo_seguro,
             remitente_id=remitente.id,
             destinatario_id=destinatario.id,
             agencia_origen_id=origen.id,
@@ -312,14 +363,62 @@ class PublicoService:
         )
         db.add(hito_inicial)
         db.commit()
+        db.refresh(nuevo_envio)
+
+        # Enviar correo transaccional de confirmación al remitente (si proporcionó email)
+        rem_enviado = False
+        dest_enviado = False
+        metodo_usado = None
+
+        if req.rem_email and req.rem_email.strip():
+            try:
+                logger.info("Iniciando envío de correo de pre-registro al remitente: %s", req.rem_email.strip())
+                res_rem = enviar_correo_preregistro(
+                    destinatario_email=req.rem_email.strip(),
+                    destinatario_nombre=req.rem_nombre.strip(),
+                    codigo_tracking=codigo_seguro,
+                    origen_nombre=f"{origen.nombre} ({origen.departamento})",
+                    destino_nombre=f"{destino.nombre} ({destino.departamento})",
+                    tarifa_estimada=float(precio_total),
+                    tipo_paquete=req.tipo_paquete
+                )
+                rem_enviado = bool(res_rem and res_rem.get("enviado"))
+                metodo_usado = res_rem.get("metodo") if res_rem else None
+                logger.info("Envío de correo remitente completado: %s", res_rem)
+            except Exception as exc:
+                logger.error("Error al enviar correo de pre-registro al remitente (%s): %s", req.rem_email, exc, exc_info=True)
+
+        # Notificar también al destinatario si registró correo electrónico
+        if req.dest_email and req.dest_email.strip() and req.dest_email.strip().lower() != (req.rem_email or "").strip().lower():
+            try:
+                logger.info("Iniciando envío de correo de pre-registro al destinatario: %s", req.dest_email.strip())
+                res_dest = enviar_correo_preregistro_destinatario(
+                    destinatario_email=req.dest_email.strip(),
+                    destinatario_nombre=req.dest_nombre.strip(),
+                    remitente_nombre=req.rem_nombre.strip(),
+                    codigo_tracking=codigo_seguro,
+                    origen_nombre=f"{origen.nombre} ({origen.departamento})",
+                    destino_nombre=f"{destino.nombre} ({destino.departamento})",
+                    tipo_paquete=req.tipo_paquete
+                )
+                dest_enviado = bool(res_dest and res_dest.get("enviado"))
+                if not metodo_usado and res_dest:
+                    metodo_usado = res_dest.get("metodo")
+                logger.info("Envío de correo destinatario completado: %s", res_dest)
+            except Exception as exc:
+                logger.error("Error al enviar correo de pre-registro al destinatario (%s): %s", req.dest_email, exc, exc_info=True)
 
         return PedidoCreadoResponse(
-            codigo_tracking=correlativo,
+            codigo_tracking=codigo_seguro,
             precio_estimado=float(precio_total),
             monto_subtotal=float(subtotal),
             monto_igv=float(igv),
             estado="REGISTRADO",
-            mensaje="Envío pre-registrado con éxito. Acérquese a la agencia de origen para despacharlo."
+            mensaje="Envío pre-registrado con éxito. Acérquese a la agencia de origen para despacharlo.",
+            creado_en=nuevo_envio.creado_en,
+            correo_remitente_enviado=rem_enviado,
+            correo_destinatario_enviado=dest_enviado,
+            metodo_envio_correo=metodo_usado
         )
 
     @classmethod

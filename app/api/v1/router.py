@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, publico, usuarios, dashboard, envios, clientes, pagos
+from app.api.v1.endpoints import auth, publico, usuarios, dashboard, envios, clientes, pagos, caja, agencias
 
 api_router = APIRouter()
 
@@ -11,4 +11,6 @@ api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboar
 api_router.include_router(envios.router, prefix="/envios", tags=["Gestión de Envíos y Encomiendas"])
 api_router.include_router(clientes.router, prefix="/clientes", tags=["Directorio de Clientes"])
 api_router.include_router(pagos.router, prefix="/pagos", tags=["Motor de Pagos y Webhooks"])
+api_router.include_router(caja.router, prefix="/caja", tags=["Control y Cierre de Caja"])
+api_router.include_router(agencias.router, prefix="/agencias", tags=["Gestión de Sedes y Agencias"])
 

@@ -71,7 +71,9 @@ Al momento en que el remitente acude a la agencia o el courier arriba a su domic
   * No procede reembolso parcial por diferencia de centavos o kilos sobrantes, debido a la **reserva previa de espacio en bodega** (salvo anulación formal de la orden según `BR-CAN-01`).
 
 ### `BR-TAR-03`: Restricción de Medidas y Pesos Mínimos/Máximos
-* **Peso Físico Mínimo:** 0.10 kg (no se admiten paquetes con peso cero).
+* **Peso Físico Mínimo:** 0.10 kg (prohibido peso cero o negativo).
+* **Dimensiones Físicas Mínimas Obligatorias:** Largo, Ancho y Alto de al menos **1.00 cm** (prohibido `0` o campos en blanco). Impide distorsiones de cubicaje a 0.00 kg y rechazos 422 de Pydantic.
+* **Validación Reactiva:** En los formularios web y de caja, las dimensiones menores a 1 cm activan alerta roja visual (`border-danger`) e inhabilitan el botón de cobro/envío.
 * **Peso Físico Máximo por Bulto Individual:** 80.00 kg (por normativas de salud ocupacional y manipulación manual de carga).
 * **Dimensiones Máximas:** Ningún lado (largo, ancho o alto) puede exceder de 250 cm sin previa autorización de gerencia de flota.
 

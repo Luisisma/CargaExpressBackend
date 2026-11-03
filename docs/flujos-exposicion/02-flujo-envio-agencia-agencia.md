@@ -43,7 +43,15 @@ stateDiagram-v2
     recepcionado --> en_ruta: 3. Almacén carga a camión
     en_ruta --> en_agencia_destino: 4. Almacén destino descarga camión
     en_agencia_destino --> entregado: 5. Destinatario recoge con DNI
-    entregado --> [*]: Ciclo completado
+    
+    registrado --> siniestrado: BR-ENV-06 Siniestro (Admin/Supervisor)
+    recepcionado --> siniestrado: BR-ENV-06 Siniestro (Admin/Supervisor)
+    en_ruta --> siniestrado: BR-ENV-06 Asalto o Accidente Vial
+    en_agencia_destino --> siniestrado: BR-ENV-06 Pérdida o Daño en Bodega
+    entregado --> siniestrado: BR-ENV-06 Reclamo con Peritaje
+
+    entregado --> [*]: Ciclo regular completado
+    siniestrado --> [*]: Congelado para Seguro / Indemnización
 ```
 
 ---
@@ -63,7 +71,7 @@ stateDiagram-v2
      $$\text{Total (S/)} = 8.00 + (\text{Peso Liquidable} \times 2.50)$$
   5. **Desglose Fiscal SUNAT (18% IGV Perú):**
      $$\text{Subtotal} = \text{round}\left(\frac{\text{Total}}{1.18}, 2\right), \quad \text{IGV} = \text{Total} - \text{Subtotal}$$
-  6. **Genera Código Correlativo Seguro:** Formato `CE-YYYY-NNNNN` (ejemplo: `CE-2026-00003`).
+  6. **Genera Código Criptoseguro No Correlativo:** Formato `CE-YYYY-XXXXXXX` (ejemplo: `CE-2026-K9M4P2X`), generado con `secrets` y Base32 Crockford (34 mil millones de combinaciones por año, inmune a fuerza bruta e IDOR).
 * **Base de Datos:**
   * Inserta fila en `envios` con `estado = "registrado"`, `estado_pago = "pendiente"`.
   * Inserta hito inicial en `historial_envios`: *"Pre-registro de envío completado vía portal web de autoservicio."*
@@ -129,6 +137,30 @@ stateDiagram-v2
 * **Base de Datos:**
   * Actualiza `envios` con la fecha y estado final.
   * Inserta hito de cierre en `historial_envios`: *"Entregado exitosamente a [Nombre Receptor] (DNI/Doc: [DNI]). Condición: Titular / Apoderado."*
+
+---
+
+### 🔴 Flujo de Excepción: Declaración Extraordinaria de Siniestro (`estado = siniestrado`)
+* **Quién lo hace:** Exclusivo para **Administrador** o **Supervisor Regional** (`BR-ENV-06`).
+* **Dónde ocurre:** Vista [EnvioDetalle.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/envios/EnvioDetalle.jsx) (Botón de acción ejecutiva *Declarar Siniestro*).
+* **Llamada API:** `POST /api/v1/envios/{codigo_tracking}/declarar-siniestro`.
+  * *Payload enviado:*
+    ```json
+    {
+      "tipo_siniestro": "robo_asalto",
+      "numero_denuncia_policial": "PNP-COMISARIA-2026-8812",
+      "responsable_reporte": "Conductor Carlos Mendoza",
+      "descripcion": "Asalto armado a mano armada en la ruta Nazca - Abancay km 412..."
+    }
+    ```
+* **Backend:** Ejecuta `EnvioService.declarar_siniestro()`:
+  1. Valida que el envío no esté ya en estado `"siniestrado"`.
+  2. Asigna `envio.estado = "siniestrado"`.
+  3. Inserta un hito inmutable en `historial_envios` con la descripción del incidente, datos de la denuncia policial, chofer reportante y nombre del administrador/supervisor que validó el evento.
+  4. Dispara automáticamente el servicio `_notificar_clientes_cambio_estado()` enviando correos transaccionales a remitente y destinatario notificando el congelamiento y número de expediente.
+* **Efecto Operativo:**
+  * La orden se congela inmediatamente, bloqueando operaciones de reparto o entrega.
+  * En la ficha técnica de la encomienda y en el Tracking público se despliega una alerta roja destacada de siniestro con instrucciones para el reclamo de póliza.
 
 ---
 
@@ -198,20 +230,23 @@ Si te piden abrir el código para sustentar esta funcionalidad:
    * Línea 79: `despachar()` (Validación de estado y paso a `"en_ruta"`).
    * Línea 106: `arribar()` (Descarga en sede y paso a `"en_agencia_destino"`).
    * Línea 133: `entregar()` (Validación de DNI físico del receptor y cierre con fecha real).
+   * Línea 244: `declarar_siniestro()` (Congelamiento de orden, tipificación, registro PNP y disparo de alertas).
 3. [app/services/publico_service.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/services/publico_service.py):
-   * Línea 229: `registrar_pedido_web()` (Cálculo de IGV 18%, generación de correlativo `CE-YYYY-NNNNN`).
+   * `registrar_pedido_web()` (Cálculo de IGV 18%, generación de tracking criptoseguro no correlativo `CE-YYYY-XXXXXXX`).
 4. [app/api/v1/endpoints/envios.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/api/v1/endpoints/envios.py):
    * Línea 195: Endpoint `/{id}/recepcionar` con autorización `require_role(["CAJERO", "ALMACEN"])`.
    * Línea 222: Endpoint `/{id}/despachar` con `require_role(["ALMACEN", "TRANSPORTISTA"])`.
    * Línea 250: Endpoint `/{id}/arribar` con `require_role(["ALMACEN", "CAJERO"])`.
    * Línea 277: Endpoint `/{id}/entregar` con `require_role(["CAJERO", "COURIER"])`.
+   * Línea 380: Endpoint `/{identificador}/declarar-siniestro` con autorización `require_role(["ADMINISTRADOR", "SUPERVISOR"])`.
 
 ### Frontend:
 1. [src/pages/public/RegistrarPedido.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/public/RegistrarPedido.jsx): Formulario de cotización y pre-registro.
 2. [src/pages/admin/caja/RecepcionEnvios.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/caja/RecepcionEnvios.jsx): Vista de balanza y recepción del cajero.
 3. [src/pages/admin/almacen/AlmacenDespacho.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/almacen/AlmacenDespacho.jsx): Vista de carga al camión por código de tracking.
 4. [src/pages/admin/almacen/AlmacenArribos.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/almacen/AlmacenArribos.jsx): Vista de descarga de camión en sede destino.
-5. [src/pages/admin/envios/EnvioDetalle.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/envios/EnvioDetalle.jsx): Vista de trazabilidad completa y modal de entrega física con DNI.
+5. [src/pages/admin/envios/EnvioDetalle.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/envios/EnvioDetalle.jsx): Vista de trazabilidad completa, modal de entrega física con DNI y **modal de declaración de siniestros con tipificación PNP**.
+6. [src/pages/public/Tracking.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/public/Tracking.jsx): Consulta de tracking con banner especial de siniestro e hitos.
 
 ---
 
@@ -223,3 +258,4 @@ Si te piden abrir el código para sustentar esta funcionalidad:
 | **¿Por qué dividen el peso volumétrico entre 6000?** | *"Es el factor estándar internacional IATA para transporte terrestre y de carga express. Representa la equivalencia entre espacio ocupado en metros cúbicos y peso en kilogramos."* |
 | **¿Cómo garantizan que un paquete no se marque como 'entregado' por error si aún está en viaje?** | *"La lógica de negocio en `EnvioService.entregar()` exige como precondición matemática que `envio.estado == 'en_agencia_destino'`. Si un usuario intenta marcar entrega en cualquier otro estado, el servidor arroja una excepción `ValueError` y HTTP 400."* |
 | **¿Cómo sabe el cliente dónde está su paquete?** | *"A través de la tabla `historial_envios`. Cada vez que un operario recepciona, despacha, arriba o entrega el paquete, se genera un registro inmutable con fecha, estado y descripción que se expone en la vista pública de `/tracking/:codigo`."* |
+| **¿Qué protocolo se sigue si el camión interprovincial sufre un asalto o vuelco?** | *"El módulo `BR-ENV-06` permite al Administrador o Supervisor congelar la encomienda invocando `declarar_siniestro()`. Esto congela el bulto, asocia la denuncia policial PNP, graba el hito con el operador responsable y dispara correos de alerta inmediata a los clientes para el trámite de seguro e indemnización."* |

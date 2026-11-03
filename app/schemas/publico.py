@@ -1,7 +1,7 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import Optional, List, Literal
 from decimal import Decimal
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, field_serializer
 
 
 class AgenciaPublicaResponse(BaseModel):
@@ -23,6 +23,9 @@ class CotizacionRequest(BaseModel):
     tipo_envio: Literal["agencia_agencia", "agencia_domicilio", "domicilio_agencia", "domicilio_domicilio"] = Field(
         ..., description="Modalidad de entrega"
     )
+    tipo_paquete: Optional[Literal["caja", "sobre", "paquete", "saco"]] = Field(
+        default="caja", description="Clasificación física del paquete"
+    )
     peso_kg: float = Field(..., gt=0, le=1000, description="Peso físico en kilogramos")
     largo_cm: float = Field(..., gt=0, le=300, description="Largo del bulto en cm")
     ancho_cm: float = Field(..., gt=0, le=300, description="Ancho del bulto en cm")
@@ -37,6 +40,8 @@ class CotizacionResponse(BaseModel):
     peso_liquidable: float
     tarifa_base: float
     tarifa_peso_adicional: float
+    recargo_tipo_paquete: float = 0.0
+    descripcion_tipo_paquete: Optional[str] = None
     recargo_domicilio: float
     recargo_recojo: float = 0.0
     precio_total: float
@@ -49,6 +54,12 @@ class TrackingHitoResponse(BaseModel):
     fecha: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("fecha", when_used="json")
+    def serializar_fecha(self, dt: datetime) -> str:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()
 
 
 class TrackingPublicoResponse(BaseModel):
@@ -65,6 +76,12 @@ class TrackingPublicoResponse(BaseModel):
     precio_total: float
     creado_en: datetime
     historial: List[TrackingHitoResponse]
+
+    @field_serializer("creado_en", when_used="json")
+    def serializar_creado_en(self, dt: datetime) -> str:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()
 
 
 class ClientePublicoResponse(BaseModel):
@@ -125,6 +142,19 @@ class PedidoCreadoResponse(BaseModel):
     monto_igv: float
     estado: str
     mensaje: str
+    creado_en: Optional[datetime] = None
+    correo_remitente_enviado: bool = False
+    correo_destinatario_enviado: bool = False
+    metodo_envio_correo: Optional[str] = None
+
+    @field_serializer("creado_en", when_used="json")
+    def serializar_creado_en(self, dt: Optional[datetime]) -> Optional[str]:
+        if dt is None:
+            return None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()
+
 
 
 class CancelarPedidoRequest(BaseModel):

@@ -53,7 +53,9 @@ CargaExpressBackend/docs/
 │   ├── 08-gestion-sedes-y-agencias.md               # Flujo técnico de Sedes y Agencias Provinciales
 │   ├── 09-directorio-gestion-clientes.md            # Flujo técnico de Directorio y Gestión de Clientes
 │   ├── 10-dashboard-gerencial-kpis.md               # Flujo técnico de Dashboard, Métricas SQL y KPIs
-│   └── 11-recuperacion-password-email.md            # Flujo técnico de Recuperación de Claves por Mailtrap
+│   ├── 11-recuperacion-password-email.md            # Flujo técnico de Recuperación de Claves por Mailtrap
+│   ├── 04-guias-de-remision-y-manifiestos.md        # Flujo legal y técnico de Guías GRE-T (SUNAT) y Manifiestos (SUTRAN)
+│   └── 05-notificaciones-y-correo-transaccional.md   # Motor híbrido transaccional por Email (Gmail STARTTLS & Mailtrap)
 │
 ├── arquitectura/                                    # 🏛️ ESPECIFICACIÓN VIVA DE ARQUITECTURA
 │   ├── 01-arquitectura-backend-capas.md             # Clean Layers: Routers, Services, Schemas y ORM
@@ -80,7 +82,8 @@ CargaExpressBackend/docs/
 │   ├── 03-parametros-backend-seguro.md              # Headers, CORS, criptografía y análisis DAST
 │   ├── 04-auditoria-y-base-de-datos.md              # Trazabilidad forense y mitigación de fugas
 │   ├── 05-diseno-base-de-datos-auditoria-jwt.md     # Especificación DDL y normalización 3NF
-│   └── 06-auditoria-dast-owasp-zap.md              # Informe de auditoría DAST con OWASP ZAP y remediaciones SRI/CSP
+│   ├── 06-auditoria-dast-owasp-zap.md              # Informe de auditoría DAST con OWASP ZAP y remediaciones SRI/CSP
+│   └── 07-gestion-sesiones-jwt-expiracion-interceptores.md # Interceptores 401, mitigación token caducado y purga reactiva
 │
 ├── pruebas/                                         # 🧪 PRUEBAS DE SOFTWARE Y CONTROL DE CALIDAD
 │   ├── 01-pruebas-software-superadas.md            # Casos de prueba superados con éxito (Funcionales, DAST, E2E)
@@ -95,7 +98,12 @@ CargaExpressBackend/docs/
     ├── sprint-04b-administracion-usuarios-rbac-minimo-privilegio.md # CRUD de personal y control RBAC
     ├── sprint-05-caja-cobros-recepcion-comprobantes.md # Especificación de caja chica y cobranzas
     ├── sprint-05b-consulta-reniec-api-preorden.md   # Consulta de DNI y RUC en pre-ordenes
-    └── sprint-06-operativa-core-estados.md          # Flujo operativo de recepción, despacho y arribo
+    ├── sprint-06-operativa-core-estados.md          # Flujo operativo de recepción, despacho y arribo
+    ├── sprint-07-dashboard-analitica-kpis-por-rol.md # Consola ejecutiva y KPIs adaptados por rol RBAC
+    ├── sprint-08-courier-ultima-milla-caja-sobrepagos.md # Courier última milla, arqueo ciego y sobrepagos Yape
+    ├── sprint-09-data-warehouse-modelado-power-bi.md # Data Warehouse Kimball (Esquema Estrella) y Power BI
+    ├── sprint-10-suite-calidad-pytest-pase-produccion.md # Suite de pruebas automatizadas Pytest > 75% y Hardening
+    └── sprint-11-notificaciones-email-transaccional.md # Motor de notificaciones SMTP TLS real (Gmail) y alertas de encomienda
 ```
 
 ---
@@ -110,6 +118,7 @@ Para facilitar la revisión cruzada durante el desarrollo y los code reviews:
 | **`BR-ENV-02`** | Envíos | Prohibido despachar a camión (`en_ruta`) paquetes con pago pendiente en origen. | [03-ciclo-vida-envio-transicion-estados.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/03-ciclo-vida-envio-transicion-estados.md) |
 | **`BR-ENV-03`** | Envíos | Secuencialidad obligatoria: no se arriba a destino si no estuvo previamente `en_ruta`. | [03-ciclo-vida-envio-transicion-estados.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/03-ciclo-vida-envio-transicion-estados.md) |
 | **`BR-ENV-04`** | Envíos | Entrega de paquete condicionada a pago cancelado y registro de DNI del receptor físico. | [03-ciclo-vida-envio-transicion-estados.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/03-ciclo-vida-envio-transicion-estados.md) |
+| **`BR-ENV-06`** | Envíos | Declaración extraordinaria de siniestro (Admin/Supervisor), registro PNP y congelamiento. | [03-ciclo-vida-envio-transicion-estados.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/03-ciclo-vida-envio-transicion-estados.md) |
 | **`BR-TAR-01`** | Tarifas | Determinación exclusiva de tarifas en backend: `(L*A*H)/6000`, base S/ 8.00 + S/ 2.50/kg. | [04-motor-tarifario-cubicaje-flete.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/04-motor-tarifario-cubicaje-flete.md) |
 | **`BR-TAR-02`** | Tarifas | Cobro obligatorio de reintegro en ventanilla si el peso en balanza supera lo declarado. | [04-motor-tarifario-cubicaje-flete.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/04-motor-tarifario-cubicaje-flete.md) |
 | **`BR-CLI-01`** | Clientes | Factura electrónica exige obligatoriamente RUC en estado ACTIVO y HABIDO ante SUNAT. | [05-clientes-identidad-fiscal.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/05-clientes-identidad-fiscal.md) |
@@ -133,6 +142,10 @@ Para facilitar la revisión cruzada durante el desarrollo y los code reviews:
 | **Sprint 05** | [Caja, Cobros y Webhook](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-05-caja-cobros-recepcion-comprobantes.md) | Aperturas Caja / Cobro Presencial / Webhooks de Pago | 📋 En Ejecución |
 | **Sprint 05B**| [Consulta RENIEC / SUNAT](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-05b-consulta-reniec-api-preorden.md) | API DNI/RUC en tiempo real para pre-registro | ✅ Certificado E2E |
 | **Sprint 06** | [Operativa Core y Estados](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-06-operativa-core-estados.md) | Recepción en Balanza / Despacho / Arribo / Entrega | ✅ Completado E2E |
+| **Sprint 07** | [Dashboard Analítica y KPIs](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-07-dashboard-analitica-kpis-por-rol.md) | Consola Ejecutiva y Métricas segregadas por Rol | 🚀 En Ejecución |
+| **Sprint 08** | [Courier y Arqueo Ciego](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-08-courier-ultima-milla-caja-sobrepagos.md) | Hoja de reparto a domicilio, arqueo ciego y sobrepagos | 📋 Especificado SDD |
+| **Sprint 09** | [Data Warehouse y Power BI](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-09-data-warehouse-modelado-power-bi.md) | Modelo Estrella Kimball, vistas SQL y DAX en Power BI | 📋 Especificado SDD |
+| **Sprint 10** | [Calidad Pytest y Producción](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/sprints/sprint-10-suite-calidad-pytest-pase-produccion.md) | Suite de pruebas unitarias > 75%, carga y hardening | 📋 Especificado SDD |
 
 ---
 

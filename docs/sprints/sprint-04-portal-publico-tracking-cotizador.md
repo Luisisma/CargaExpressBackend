@@ -76,7 +76,7 @@ El objetivo primordial de este sprint es cerrar el **ciclo operativo completo** 
 1. Iniciar sesión de base de datos con bloqueo transaccional.
 2. Buscar cliente remitente por documento en `clientes`; si no existe, crearlo.
 3. Buscar cliente destinatario por documento en `clientes`; si no existe, crearlo.
-4. Generar código correlativo de tracking único con formato `CE-YYYY-NNNNN` (ejemplo: `CE-2026-00002`).
+4. Generar código criptoseguro de tracking único con formato `CE-YYYY-XXXXXXX` (ejemplo: `CE-2026-K9M4P2X`), generado con `secrets` y alfabeto Base32 de Crockford (34 mil millones de combinaciones por año, inmune a ataques de adivinación o enumeración).
 5. Insertar en la tabla `envios` con `estado = 'registrado'`, `estado_pago = 'pendiente'`, `registrado_web = true`.
 6. Insertar en `historial_envios`:
    * `estado = 'registrado'`
@@ -84,10 +84,11 @@ El objetivo primordial de este sprint es cerrar el **ciclo operativo completo** 
    * `agencia_id = agencia_origen_id`
 7. Commit atómico. Si ocurre cualquier excepción, ejecutar `rollback` para impedir registros huérfanos.
 
-### 2.4. Protección de Datos Personales en Tracking Público (OWASP API1 / API3)
-* Nunca exponer precios contables, documentos de identidad completos ni direcciones exactas a usuarios no autenticados en la API de rastreo.
-* Enmascaramiento de nombres: `Juan Carlos Pérez` -> `J*** C***** P****`.
-* La dirección de entrega solo expone distrito y provincia.
+### 2.4. Protección de Datos Personales y Prevención de Enumeración (OWASP API1 / API3)
+* **Anti-IDOR y Anti-Scraping:** El código no correlativo impide deducir envíos anteriores o posteriores mediante fuerza bruta o scraping secuencial.
+* **Protección PII:** Nunca exponer precios contables, documentos de identidad completos ni direcciones exactas a usuarios no autenticados en la API de rastreo.
+* **Enmascaramiento de nombres:** `Juan Carlos Pérez` -> `J*** C***** P****`.
+* **Protección de ubicación:** La dirección de entrega solo expone distrito y provincia.
 
 ---
 

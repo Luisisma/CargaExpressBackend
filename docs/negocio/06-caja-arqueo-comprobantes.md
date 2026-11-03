@@ -75,3 +75,10 @@ En ventanilla de agencia se aceptan únicamente los siguientes medios de pago au
   * Agencias Sucursales: Boletas `B002`, `B003`... Facturas `F002`, `F003`...
 * **Correlatividad:** Cada comprobante emitido incrementa el correlativo en 1 de forma estrictamente secuencial sin saltos ni duplicados.
 * **Inmutabilidad:** Una vez emitido el comprobante, sus importes no pueden alterarse; cualquier anulación exige la emisión de una **Nota de Crédito Electrónica** vinculada según la política de cancelaciones ([01-politicas-cancelaciones-reembolsos.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/01-politicas-cancelaciones-reembolsos.md)).
+
+### `BR-CAJ-05`: Restricción de Egresos por Devolución de Medios Digitales en Ventanilla
+* **Descripción:** Para proteger la liquidez operativa y cumplir con las normas de prevención de lavado de activos (Resolución SBS N° 789-2018), los egresos de caja por sobrepagos en billeteras móviles (Yape/Plin) están limitados a un tope máximo de **S/ 20.00**.
+* **Control en Sistema:**
+  * Si un cajero intenta registrar un egreso en efectivo mayor a $S/\ 20.00$ asociado a un cobro digital, el backend **rechaza la transacción con HTTP 422**.
+  * El sistema fuerza la derivación al protocolo de **Re-Yapeo Digital Inverso** o **Saldo a Favor en Cuenta de Cliente** conforme a la regla `BR-COB-04`.
+

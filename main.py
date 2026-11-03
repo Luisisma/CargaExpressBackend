@@ -14,8 +14,8 @@ app = FastAPI(
     servers=[
         {"url": "http://127.0.0.1:8000", "description": "Servidor Local de Desarrollo"}
     ],
-    docs_url=None,  # Manejado con SRI personalizado en modo debug
-    redoc_url=None,
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
 )
 
 # 1. Middleware de CORS restrictivo (OWASP API8:2023)
@@ -88,47 +88,17 @@ async def generic_exception_handler(request: Request, exc: Exception):
     )
 
 
+import os
+from fastapi.staticfiles import StaticFiles
+
 # 4. Enrutamiento Principal
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+# 5. Servir archivos estáticos locales de evidencias y comprobantes
+UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(os.path.join(UPLOADS_DIR, "evidencias"), exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
-# 5. Swagger UI con Subresource Integrity (SRI) para cumplimiento de seguridad
-if settings.DEBUG:
-    @app.get("/docs", include_in_schema=False)
-    async def custom_swagger_ui_html():
-        html_content = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{settings.PROJECT_NAME} - Swagger UI</title>
-    <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
-    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" 
-          integrity="sha384-Ov4/wv3j2bmct8cDc5X4ngJZohVPzEmc6uDPH8WeljUxO5vtoykvMEfbu9Vh6RaW" 
-          crossorigin="anonymous">
-</head>
-<body>
-    <div id="swagger-ui"></div>
-    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js" 
-            integrity="sha384-ZPehFMQommnnuaZ4rpxgkgTT2DKFVp4hZC/7pLit+9Lek9T1YGSo23eHFbvNkXkw" 
-            crossorigin="anonymous"></script>
-    <script>
-    const ui = SwaggerUIBundle({{
-        url: '{app.openapi_url}',
-        dom_id: '#swagger-ui',
-        layout: 'BaseLayout',
-        deepLinking: true,
-        showExtensions: true,
-        showCommonExtensions: true,
-        presets: [
-            SwaggerUIBundle.presets.apis,
-            SwaggerUIBundle.SwaggerUIStandalonePreset
-        ],
-    }});
-    </script>
-</body>
-</html>"""
-        return HTMLResponse(content=html_content)
 
 
 @app.get("/health", tags=["Salud del Sistema"])

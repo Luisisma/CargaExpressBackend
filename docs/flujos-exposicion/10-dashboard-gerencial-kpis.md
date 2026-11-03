@@ -77,7 +77,7 @@ $$\text{SELECT * FROM envios ORDER BY creado\_en DESC LIMIT 8;}$$
 
 ---
 
-## 4. Payloads de Red (API REST)
+## 4. Payloads de Red Segregados por Rol (API REST)
 
 #### Petición del Cliente:
 ```http
@@ -85,30 +85,45 @@ GET /api/v1/dashboard/resumen HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1Ni...
 ```
 
-#### Respuesta JSON Estructurada:
+#### Respuesta JSON Estructurada por Rol (Ejemplo Administrador):
 ```json
 {
   "success": true,
   "data": {
+    "rol": "ADMINISTRADOR",
+    "fecha_hoy": "miércoles 21 de octubre, 2026",
     "stats": {
       "envios_total": 5,
       "envios_hoy": 2,
       "ingresos_hoy": 37.25,
       "pendientes_pago": 1
     },
-    "ultimos_envios": [
-      {
-        "id": 5,
-        "codigo_tracking": "CE-2026-00005",
-        "remitente": "Carlos Alberto Mendoza",
-        "destino": "AGENCIA CUSCO - AGENCIA CUSCO",
-        "estado": "Entregado",
-        "estado_pago": "pagado",
-        "precio_envio": 15.5,
-        "fecha": "08/10 18:22"
-      }
-    ],
-    "fecha_hoy": "martes 13 de octubre, 2026"
+    "stats_admin": {
+      "recaudacion_total": 84.75,
+      "recaudacion_hoy": 37.25,
+      "envios_totales": 5,
+      "envios_hoy": 2,
+      "pendientes_pago": 1,
+      "ticket_promedio": 16.95,
+      "distribucion_pagos": [
+        {"medio": "EFECTIVO", "cantidad": 1, "monto": 20.5, "porcentaje": 38.9},
+        {"medio": "YAPE", "cantidad": 2, "monto": 32.25, "porcentaje": 61.1}
+      ],
+      "estados_embudo": {
+        "registrado": 2,
+        "recepcionado": 0,
+        "en_ruta": 1,
+        "en_agencia_destino": 0,
+        "entregado": 2
+      },
+      "top_rutas": [
+        {"ruta": "Lima ➔ Arequipa", "total_envios": 3, "ingresos": 52.75},
+        {"ruta": "Lima ➔ Cusco", "total_envios": 2, "ingresos": 32.0}
+      ]
+    },
+    "stats_cajero": null,
+    "stats_almacen": null,
+    "ultimos_envios": [...]
   }
 }
 ```
@@ -119,15 +134,17 @@ Authorization: Bearer eyJhbGciOiJIUzI1Ni...
 
 ### Backend:
 1. [app/api/v1/endpoints/dashboard.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/api/v1/endpoints/dashboard.py):
-   * Líneas 16-106: Endpoint `obtener_resumen_dashboard()` con todas las agregaciones `func.count()`, `func.sum()` y límite ordenado descendente.
+   * Endpoint `obtener_resumen_dashboard()`: Segrega cálculos SQL automáticos según `current_user.tipo`.
+   * Agrupaciones analíticas de `forma_pago`, conteo de embudo de estados y agregación inter-agencias para `top_rutas`.
+2. [app/schemas/dashboard.py](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/app/schemas/dashboard.py):
+   * Contratos Pydantic v2: `AdminStats`, `CajeroStats`, `AlmacenStats`, `DistribucionPagoItem` y `TopRutaItem`.
 
 ### Frontend:
 1. [src/pages/admin/Dashboard.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/admin/Dashboard.jsx):
-   * Líneas 24-39: Función `cargarDashboard()` que sincroniza métricas con el servidor.
-   * Líneas 80-160: Tarjetas KPI de resumen gerencial.
-   * Líneas 180-280: Tabla reactiva de encomiendas recientes con badges de estado.
-2. [src/services/dashboardService.js](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/services/dashboardService.js):
-   * Llamada a `/dashboard/resumen`.
+   * Vista condicional por rol:
+     * **ADMINISTRADOR / SUPERVISOR:** Consola global con facturación total, ticket promedio, embudo de estados logísticos, mix de medios de pago y top 5 rutas interprovinciales.
+     * **CAJERO:** Métricas de sede, recaudación del día en ventanilla, paquetes admitidos en balanza y entregas con DNI.
+     * **ALMACÉN:** Métricas estrictamente físicas y logísticas (bultos pendientes de estiba, camiones en tránsito, carga en bodega y peso en kg), sin exposición de cifras de dinero (Principio del Menor Privilegio).
 
 ---
 
@@ -135,5 +152,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1Ni...
 
 | Pregunta Típica | Respuesta Técnica y de Negocio |
 |:---|:---|
-| **¿Por qué las métricas se calculan en base de datos y no trayendo todos los envíos al frontend?** | *"Por eficiencia y escalabilidad (Principio de Carga Mínima). Si la empresa tuviera 100,000 encomiendas, traerlas al navegador colapsaría el ancho de banda y la memoria del cliente. Enviar `func.count()` y `func.sum()` permite que el motor relacional procese los números en milisegundos y devuelva un payload liviano de menos de 1 KB."* |
-| **¿Qué roles tienen permiso para ver el Dashboard?** | *"Todos los roles operativos (`ADMINISTRADOR`, `SUPERVISOR`, `CAJERO`, `ALMACEN`, `COURIER`, `TRANSPORTISTA`) tienen acceso de lectura al Dashboard para conocer el pulso diario de la empresa, pero el menú lateral y las acciones operativas se filtran según sus privilegios RBAC específicos."* |
+| **¿Por qué el personal de almacén no ve montos de recaudación en el Dashboard?** | *"Por el Principio de Privilegio Mínimo (NIST / OWASP API5). Los operarios de bodega y transportistas gestionan carga física, manifiestos y cubicaje; exponer la facturación monetaria representaría un riesgo innecesario de fuga de información corporativa y potenciales riesgos de seguridad."* |
+| **¿Cómo se calculan las rutas más demandadas?** | *"Mediante un JOIN optimizado entre la tabla `envios` y los alias de la tabla `agencias` (origen y destino), agrupando por departamento y ordenando por `COUNT(envios.id) DESC` con límite de 5 registros."* |
+| **¿Qué ocurre si un cliente yapea de más en ventanilla?** | *"Se aplica la Política de Paridad de Pago: el cajero valida el Número de Operación en el terminal de la empresa. Si la diferencia es menor o igual a S/ 20, se emite un egreso de caja en ventanilla; si es mayor, se restituye por la misma vía digital (re-yapeo inverso) para evitar estafas de lavado de dinero en efectivo."* |

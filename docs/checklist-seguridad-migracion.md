@@ -41,9 +41,9 @@ Antes de marcar cualquier endpoint como `✅ Completado`, se debe certificar el 
 | :--- | :---: | :---: | :--- | :---: | :--- |
 | `/api/v1/publico/agencias` | `GET` | Público | Consulta agencias activas, ocultar campos de auditoría interna. | ✅ Certificado E2E | Probado en vivo: lista agencias operativas habilitadas en BDD. |
 | `/api/v1/publico/cotizar` | `POST` | Público | Cálculo seguro en servidor (A04), peso volumétrico, extra='forbid'. | ✅ Certificado E2E | Probado en vivo: cálculo server-side tarifario y volumétrico SUNAT. |
-| `/api/v1/publico/tracking/{codigo}` | `GET` | Público | Enmascaramiento de PII (API1/API3), sanitización regex `^CE-\d{4}-\d{5}$`. | ✅ Certificado E2E | Probado en vivo: línea de tiempo y protección de datos personales. |
+| `/api/v1/publico/tracking/{codigo}` | `GET` | Público | Enmascaramiento de PII (API1/API3), soporte retrocompatible y no enumeración. | ✅ Certificado E2E | Consulta de línea de tiempo con PII protegido y anti-scraping. |
 | `/api/v1/publico/buscar-cliente/{doc}` | `GET` | Público | Validación DNI/RUC, tasa limitada, protección de contactos. | ✅ Certificado E2E | Probado en vivo: autocompleta clientes frecuentes sin exponer PII. |
-| `/api/v1/publico/pedidos/registrar` | `POST` | Público | Transacción ACID, desglose SUNAT, correlativo CE-YYYY-NNNNN. | ✅ Certificado E2E | Probado en vivo: persistió encomienda CE-2026-00003 e hito histórico. |
+| `/api/v1/publico/pedidos/registrar` | `POST` | Público | Transacción ACID, desglose SUNAT, tracking criptoseguro no correlativo (`CE-YYYY-XXXXXXX`). | ✅ Certificado E2E | Generador Base32 Crockford con 34 mil millones de combinaciones/año anti-IDOR. |
 
 ---
 

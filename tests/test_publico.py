@@ -202,6 +202,8 @@ def test_registrar_pedido_web_exitoso(client, publico_seed_data):
             "dest_tipo_doc": "dni",
             "dest_num_doc": "55667788",
             "dest_nombre": "Lucia Mendez",
+            "dest_email": "lucia@ejemplo.pe",
+            "dest_telefono": "988777666",
             "agencia_origen_id": 1,
             "agencia_destino_id": 2,
             "tipo_envio": "agencia_agencia",
@@ -225,3 +227,58 @@ def test_registrar_pedido_web_exitoso(client, publico_seed_data):
     track_res = client.get(f"/api/v1/publico/tracking/{data['codigo_tracking']}")
     assert track_res.status_code == 200
     assert track_res.json()["data"]["codigo_tracking"] == data["codigo_tracking"]
+
+
+def test_generador_tracking_seguro_formato_y_unicidad(db_session):
+    """Verifica que el generador produzca códigos de longitud exacta, alfabeto seguro y sin colisiones."""
+    import re
+    from app.services.publico_service import generar_codigo_tracking_seguro, TRACKING_ALPHABET
+
+    codigos = set()
+    patron = re.compile(rf"^CE-2026-[{TRACKING_ALPHABET}]{{7}}$")
+
+    for _ in range(50):
+        cod = generar_codigo_tracking_seguro(db_session, anio=2026, longitud=7)
+        assert len(cod) == 15, f"Longitud incorrecta: {len(cod)}"
+        assert patron.match(cod), f"Formato no cumple con el estándar seguro: {cod}"
+        assert cod not in codigos, f"Colisión detectada: {cod}"
+        codigos.add(cod)
+
+    assert len(codigos) == 50
+
+
+def test_no_predictibilidad_entre_pedidos_consecutivos(client, publico_seed_data):
+    """Comprueba que dos pedidos consecutivos generen códigos no correlativos e impredecibles."""
+    payload_base = {
+        "rem_tipo_doc": "dni",
+        "rem_num_doc": "22334455",
+        "rem_nombre": "Carlos Vargas",
+        "rem_email": "carlos@ejemplo.pe",
+        "rem_telefono": "911222333",
+        "dest_tipo_doc": "dni",
+        "dest_num_doc": "66778899",
+        "dest_nombre": "Diana Rojas",
+        "dest_email": "diana@ejemplo.pe",
+        "dest_telefono": "944555666",
+        "agencia_origen_id": 1,
+        "agencia_destino_id": 2,
+        "tipo_envio": "agencia_agencia",
+        "tipo_paquete": "paquete",
+        "peso_kg": 2.5
+    }
+
+    res1 = client.post("/api/v1/publico/pedidos/registrar", json=payload_base)
+    assert res1.status_code == 201
+    cod1 = res1.json()["data"]["codigo_tracking"]
+
+    res2 = client.post("/api/v1/publico/pedidos/registrar", json=payload_base)
+    assert res2.status_code == 201
+    cod2 = res2.json()["data"]["codigo_tracking"]
+
+    assert cod1 != cod2
+    assert cod1.startswith("CE-2026-")
+    assert cod2.startswith("CE-2026-")
+    # Los sufijos no deben ser numéricos secuenciales
+    sufijo1 = cod1.split("-")[2]
+    sufijo2 = cod2.split("-")[2]
+    assert not (sufijo1.isdigit() and sufijo2.isdigit()), "Los sufijos no deben ser incrementales"

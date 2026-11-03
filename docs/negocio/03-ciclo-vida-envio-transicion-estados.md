@@ -39,8 +39,16 @@ stateDiagram-v2
     en_reparto --> entregado : BR-ENV-04 (Courier entrega en domicilio)
     en_reparto --> en_agencia_destino : Intento fallido / Ausente
     
+    registrado --> siniestrado : BR-ENV-06 (Declaración Admin / Supervisor)
+    recepcionado --> siniestrado : BR-ENV-06 (Declaración Admin / Supervisor)
+    en_ruta --> siniestrado : BR-ENV-06 (Asalto en ruta / Accidente vial)
+    en_agencia_destino --> siniestrado : BR-ENV-06 (Pérdida o siniestro en bodega)
+    en_reparto --> siniestrado : BR-ENV-06 (Robo en reparto última milla)
+    entregado --> siniestrado : BR-ENV-06 (Reclamo formal post-entrega con peritaje)
+
     entregado --> [*]
     cancelado --> [*]
+    siniestrado --> [*] : Expediente Legal / Póliza de Seguro
 ```
 
 ---
@@ -57,6 +65,7 @@ stateDiagram-v2
 | **`en_agencia_destino`**| **`en_reparto`** | Asignación a chofer de última milla para entrega a domicilio. | `ALMACEN`, `COURIER` | Tipo de envío debe ser `agencia_domicilio` o `domicilio_domicilio`. |
 | **`en_agencia_destino`**| **`entregado`** | Entrega personal en ventanilla de la agencia de destino. | `CAJERO` | **BR-ENV-04:** Verificación física de DNI del destinatario y firma de recepción. |
 | **`en_reparto`** | **`entregado`** | Entrega física en puerta del domicilio del destinatario. | `COURIER` | **BR-ENV-04:** Verificación de DNI y captura de evidencia de entrega. |
+| **Cualquier estado (salvo ya siniestrado)** | **`siniestrado`** | Declaración extraordinaria de siniestro, asalto, robo o daño severo. | `ADMINISTRADOR`, `SUPERVISOR` | **BR-ENV-06:** No puede estar previamente en `siniestrado`. Exige tipificación de evento y registro opcional de denuncia policial (PNP). Congela la cadena de custodia y notifica automáticamente por correo al remitente y destinatario para liquidación de seguro. |
 
 ---
 
@@ -91,3 +100,17 @@ stateDiagram-v2
   * `ubicacion` (Nombre o ID de la agencia que procesó el evento)
   * `usuario_id` (ID del empleado que ejecutó la acción)
   * `creado_en` (Timestamp UTC inmutable)
+
+### `BR-ENV-06`: Declaración Extraordinaria de Siniestro, Hurto o Pérdida
+* **Descripción:** Permite a la alta gerencia o supervisión regional congelar formalmente una encomienda ante un evento fortuito o de fuerza mayor (asalto en carretera, accidente vial, pérdida en bodega o daño físico irreparable).
+* **Roles Autorizados:** Exclusivo para `ADMINISTRADOR` y `SUPERVISOR` (vía RBAC).
+* **Parámetros del Incidente (`DeclararSiniestroRequest`):**
+  1. `tipo_siniestro`: Tipificación normalizada (`robo_asalto`, `accidente_transito`, `perdida_extravio`, `dano_irreparable`).
+  2. `numero_denuncia_policial`: Código de ocurrencia o denuncia policial PNP (opcional, para sustento ante la aseguradora).
+  3. `responsable_reporte`: Nombre del conductor, escolta o jefe de bodega que reportó el suceso.
+  4. `descripcion`: Detalle circunstanciado de los hechos (obligatorio, mínimo 10 caracteres).
+* **Efectos Operativos e Inmutabilidad:**
+  1. La orden pasa a `estado = 'siniestrado'`, bloqueando cualquier intento posterior de despacho, arribo o entrega regular.
+  2. Inserción automática de hito inmutable en `historial_envios` registrando el tipo de siniestro, número de denuncia PNP, responsable del reporte y el usuario que autorizó el congelamiento.
+  3. **Disparo automático de correos transaccionales:** Notificación inmediata tanto al remitente como al destinatario informando la incidencia y la apertura del expediente de liquidación de póliza.
+  4. **Exposición en Tracking Público:** La vista `/tracking/:codigo` despliega un banner de alerta roja de incidencia y el hito en la línea de tiempo.

@@ -7,9 +7,10 @@ Esta guía explica a fondo la arquitectura, seguridad y funcionamiento del módu
 ## 1. Visión General del Módulo
 
 El portal de Tracking es el servicio público de cara al cliente que permite:
-1. **Rastreo Abierto en Tiempo Real:** Cualquier usuario con su código de guía o tracking (`CE-YYYY-NNNNN`) puede verificar el estado de su paquete sin necesidad de crear una cuenta o iniciar sesión.
-2. **Protección de Datos Personales (PII / Ley 29733):** Enmascaramiento criptográfico de nombres, teléfonos y correos para evitar el raspado masivo de datos (*Data Scraping*).
-3. **Validación Oficial de Identidad Fiscal:** Búsqueda híbrida que consulta primero la base local y, de no existir, interroga en tiempo real a los servicios de **RENIEC** (DNI) y **SUNAT** (RUC) para autocompletar nombres legítimos.
+1. **Rastreo Abierto en Tiempo Real:** Cualquier usuario con su código de guía o tracking seguro (`CE-YYYY-XXXXXXX` o legados `CE-YYYY-NNNNN`) puede verificar el estado de su paquete sin necesidad de crear una cuenta o iniciar sesión.
+2. **Generación Criptográfica No Correlativa (OWASP API1 / API3):** Para evitar la enumeración de identificadores (*IDOR / Scraping masivo*) y no revelar el volumen comercial a competidores, el código se genera mediante `secrets` con alfabeto Base32 de Crockford (`32^7 = 34,359,738,368` combinaciones por año).
+3. **Protección de Datos Personales (PII / Ley 29733):** Enmascaramiento criptográfico de nombres, teléfonos y correos para evitar el raspado de datos personales.
+4. **Validación Oficial de Identidad Fiscal:** Búsqueda híbrida que consulta primero la base local y, de no existir, interroga en tiempo real a los servicios de **RENIEC** (DNI) y **SUNAT** (RUC) para autocompletar nombres legítimos.
 
 ---
 
@@ -50,8 +51,8 @@ El portal de Tracking es el servicio público de cara al cliente que permite:
 
 ## 3. Flujo Paso a Paso de la Consulta de Tracking
 
-1. **Ingreso del Código:** El cliente digita su código (ejemplo: `CE-2026-00001`) o hace clic en el enlace provisto por el sistema (`/tracking/CE-2026-00001`).
-2. **Llamada API REST:** [Tracking.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/public/Tracking.jsx) ejecuta `GET /api/v1/publico/tracking/CE-2026-00001`.
+1. **Ingreso del Código:** El cliente digita su código (ejemplo: `CE-2026-K9M4P2X` o `CE-2026-00001`) o hace clic en el enlace provisto por el sistema (`/tracking/CE-2026-K9M4P2X`).
+2. **Llamada API REST:** [Tracking.jsx](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressFront/src/pages/public/Tracking.jsx) ejecuta `GET /api/v1/publico/tracking/CE-2026-K9M4P2X`.
 3. **Búsqueda Indexada en DB:** El backend ejecuta una consulta optimizada sobre la columna indexada `envios.codigo_tracking`.
 4. **Construcción de Línea de Tiempo Inmutable:**
    * Recupera la relación 1 a N de `historial_envios` ordenada cronológicamente por `creado_en`.
