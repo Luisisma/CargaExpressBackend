@@ -1,0 +1,41 @@
+﻿cliente_id,tipo_documento,numero_documento,nombre_cliente,telefono,email,categoria_cliente
+1,DNI,45678912,Juan Carlos Pérez Ramos,987654321,juan@ejemplo.pe,Persona Natural
+2,DNI,78945612,María Elena Gómez Flores,912345678,maria@ejemplo.pe,Persona Natural
+3,DNI,75588522,LUIS HUMBERTO MORALES MENDEZ,938567209,luish.morales.dev@gmail.com,Persona Natural
+4,DNI,10666671,JOSE LUIS MORALES GERVACIO,935725871,cesarvallejocesar@gmail.com,Persona Natural
+5,DNI,78979546,EDWIN ROMARIO CARBAJAL QUISPE,987654321,edwincarba@gmail.com,Persona Natural
+6,RUC,20100070970,SUPERMERCADOS PERUANOS SOCIEDAD ANONIMA 'O ' S.P.S.A.,945561200,plazavea@gmail.com,Persona Jurídica (Empresa)
+7,DNI,75929335,ROUSS YANINA CUELLAR FERNANDEZ,945511133,cuellarrouss@gmail.com,Persona Natural
+8,DNI,72920322,MARTIN ALEXIS TAZA CAMA,985625985,martin@gmail.com,Persona Natural
+9,DNI,79879546,AUSTIM ANTONIO CHIRINOS ESCATE,986456357,Austim@gmail.com,Persona Natural
+10,DNI,75386421,ROBERTO CARLOS MUÑOZ MEJIA,998623211,Roberto@gmail.com,Persona Natural
+11,DNI,10458923,Juan Carlos Pérez Quispe,987654321,jc.perez@gmail.com,Persona Natural
+12,DNI,72345678,Rosa María Benavides Alva,976543210,rosa.benavides@outlook.com,Persona Natural
+13,RUC,20601234567,Distribuidora Textil Andina S.A.C.,954321098,logistica@textilandina.pe,Persona Jurídica (Empresa)
+14,DNI,78123456,Lucía Valeria Paredes Cano,943210987,lucia.paredes@hotmail.com,Persona Natural
+15,RUC,20554433221,Comercializadora del Sur E.I.R.L.,932109876,ventas@delsur.com.pe,Persona Jurídica (Empresa)
+16,DNI,41239876,Jorge Luis Huamán Ticona,921098765,jorge.huaman@gmail.com,Persona Natural
+17,DNI,70987654,Patricia Sofía Morales Vega,910987654,patricia.morales@gmail.com,Persona Natural
+18,DNI,79874656,CENIRA ANABEL FABIOLA ZAPATA TAYPE,930928652,cesarvallejocesar@gmail.com,Persona Natural
+19,RUC,20565738101,J & M SOLUCIONES TI S.A.C.,987654312,luishumbertomoralesmendez@gmail.com,Persona Jurídica (Empresa)
+29,DNI,48901234,WALTER ENRIQUE SALAZAR BRAVO,989012345,walter.salazar@gmail.com,Persona Natural
+30,RUC,20100070978,SUPERMERCADOS PERUANOS S.A. TRUJILLO,016188000,facturacion@supermercados.pe,Persona Jurídica (Empresa)
+31,RUC,20504794637,LOGISTICA TEXTIL DEL SUR S.A.C.,984512030,contacto@texsur.com.pe,Persona Jurídica (Empresa)
+32,RUC,20451239871,AGROEXPORTACIONES ANDINAS E.I.R.L.,956712340,ventas@agroandinas.pe,Persona Jurídica (Empresa)
+33,RUC,20601245892,DISTRIBUIDORA FERRETERA DEL NORTE S.A.C.,944123890,pedidos@ferrenorte.pe,Persona Jurídica (Empresa)
+34,RUC,20556781234,FARMA LOGISTICA PERU S.A.C.,998765123,despacho@farmalog.pe,Persona Jurídica (Empresa)
+35,DNI,41298456,MARIA ISABEL CORDOVA VEGA,987123456,maria.cordova@gmail.com,Persona Natural
+36,DNI,45671239,PEDRO ALONSO RIOS SALAZAR,976543210,pedro.rios@outlook.com,Persona Natural
+37,DNI,70192837,LUCIA CARMEN ZEVALLOS PAZ,965432187,lucia.zevallos@yahoo.es,Persona Natural
+38,DNI,72384910,CARLOS ENRIQUE VERA SUAREZ,954321876,carlos.vera@gmail.com,Persona Natural
+39,DNI,74561238,ANA SOFIA PALOMINO ORTIZ,943218765,ana.palomino@hotmail.com,Persona Natural
+40,DNI,43219875,RICARDO JAVIER BUSTAMANTE LUNA,932187654,ricardo.bustamante@gmail.com,Persona Natural
+41,DNI,48901235,ELENA MARGARITA CAMPOS RUIZ,921876543,elena.campos@gmail.com,Persona Natural
+42,DNI,71239084,JORGE ANTONIO GUZMAN PINTO,910987654,jorge.guzman@outlook.com,Persona Natural
+43,DNI,75678912,MONICA PATRICIA VARGAS LEIVA,989012345,monica.vargas@gmail.com,Persona Natural
+44,DNI,78901234,GUSTAVO ADOLFO QUISPE FLORES,978901234,gustavo.quispe@gmail.com,Persona Natural
+45,DNI,40987652,BEATRIZ ELVIRA SALGADO MEJIA,967890123,beatriz.salgado@gmail.com,Persona Natural
+46,DNI,78946543,JESSY MILAGROS ZAMBRANO PORTILLO,938567209,cesarvallejocesar@gmail.com,Persona Natural
+47,DNI,72485396,ROSA ANITA VILLALVA PEREZ,987444156,luish.morales.dev@gmail.com,Persona Natural
+48,DNI,79879465,KESSIA VICTORIA CARRILLO DIAZ,987654213,luish.morales.dev@gmail.com,Persona Natural
+49,DNI,78956464,CESAR CALETH QUIROZ QUISPE,988746544,demo@gmail.com,Persona Natural

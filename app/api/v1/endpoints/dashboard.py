@@ -21,6 +21,9 @@ from app.schemas.dashboard import (
     AlmacenStats,
     DistribucionPagoItem,
     TopRutaItem,
+    DepartamentoDemandaItem,
+    ModalidadEnvioItem,
+    TipoPaqueteItem,
     DashboardTendenciasResponse,
     TendenciaDiariaItem
 )
@@ -126,10 +129,10 @@ def obtener_resumen_dashboard(
                 )
             )
 
-        # Embudo de Estados Logísticos
+        # Embudo de Estados Logísticos e Incidencias
         stmt_estados = (
-            select(Envio.estado, func.count(Envio.id).label("conteo"))
-            .group_by(Envio.estado)
+            select(func.lower(Envio.estado).label("estado_lower"), func.count(Envio.id).label("conteo"))
+            .group_by(func.lower(Envio.estado))
         )
         estados_raw = dict(db.execute(stmt_estados).all())
         estados_embudo = {
@@ -137,8 +140,32 @@ def obtener_resumen_dashboard(
             "recepcionado": estados_raw.get("recepcionado", 0) + estados_raw.get("en_almacen_origen", 0),
             "en_ruta": estados_raw.get("en_ruta", 0) + estados_raw.get("en_transito", 0),
             "en_agencia_destino": estados_raw.get("en_agencia_destino", 0),
-            "entregado": estados_raw.get("entregado", 0)
+            "entregado": estados_raw.get("entregado", 0),
+            "siniestrado": estados_raw.get("siniestrado", 0),
+            "cancelado": estados_raw.get("cancelado", 0) + estados_raw.get("anulado", 0)
         }
+
+        # Métricas de Siniestralidad y Cancelaciones
+        total_siniestrados_val = estados_raw.get("siniestrado", 0)
+        tasa_siniestros_val = round((total_siniestrados_val / envios_total) * 100, 2) if envios_total > 0 else 0.0
+        monto_siniestrado_val = float(db.scalar(
+            select(func.coalesce(func.sum(Envio.precio_envio), 0.0)).where(func.lower(Envio.estado) == "siniestrado")
+        ) or 0.0)
+
+        # Códigos de tracking siniestrados para alerta operativa
+        stmt_cods_siniestrados = (
+            select(Envio.codigo_tracking)
+            .where(func.lower(Envio.estado) == "siniestrado")
+            .order_by(desc(Envio.actualizado_en))
+            .limit(6)
+        )
+        codigos_siniestrados_val = list(db.execute(stmt_cods_siniestrados).scalars().all())
+
+        total_cancelados_val = estados_raw.get("cancelado", 0) + estados_raw.get("anulado", 0)
+        tasa_cancelados_val = round((total_cancelados_val / envios_total) * 100, 2) if envios_total > 0 else 0.0
+        monto_cancelado_val = float(db.scalar(
+            select(func.coalesce(func.sum(Envio.precio_envio), 0.0)).where(func.lower(Envio.estado).in_(["cancelado", "anulado"]))
+        ) or 0.0)
 
         # Top 5 Rutas con mayor tráfico
         AgenciaOrig = aliased(Agencia)
@@ -166,6 +193,77 @@ def obtener_resumen_dashboard(
             for r in rutas_raw
         ]
 
+        # Top 8 Departamentos Destino con mayor demanda / facturación
+        stmt_deps = (
+            select(
+                AgenciaDest.departamento.label("departamento"),
+                func.count(Envio.id).label("total"),
+                func.coalesce(func.sum(Envio.precio_envio), 0.0).label("ingresos")
+            )
+            .join(AgenciaDest, Envio.agencia_destino_id == AgenciaDest.id)
+            .group_by(AgenciaDest.departamento)
+            .order_by(desc(func.count(Envio.id)))
+            .limit(8)
+        )
+        deps_raw = db.execute(stmt_deps).all()
+        departamentos_demanda = [
+            DepartamentoDemandaItem(
+                departamento=r.departamento.title() if r.departamento else "General",
+                total_envios=int(r.total),
+                ingresos=float(r.ingresos)
+            )
+            for r in deps_raw
+        ]
+
+        # Distribución de Modalidades de Envío (4 modalidades)
+        stmt_modalidades = (
+            select(
+                Envio.tipo_envio,
+                func.count(Envio.id).label("total")
+            )
+            .where(Envio.tipo_envio.is_not(None))
+            .group_by(Envio.tipo_envio)
+            .order_by(desc(func.count(Envio.id)))
+        )
+        mods_raw = db.execute(stmt_modalidades).all()
+        total_mods = sum(int(m.total) for m in mods_raw) or 1
+        etiquetas_modalidad = {
+            "agencia_agencia": "Agencia ➔ Agencia",
+            "agencia_domicilio": "Agencia ➔ Domicilio",
+            "domicilio_agencia": "Domicilio ➔ Agencia",
+            "domicilio_domicilio": "Domicilio ➔ Domicilio",
+        }
+        modalidades_envio = [
+            ModalidadEnvioItem(
+                modalidad=str(m.tipo_envio),
+                nombre=etiquetas_modalidad.get(str(m.tipo_envio), str(m.tipo_envio).replace("_", " ").title()),
+                total_envios=int(m.total),
+                porcentaje=round((int(m.total) / total_mods) * 100, 1)
+            )
+            for m in mods_raw
+        ]
+
+        # Tipos de Paquetes
+        stmt_paqs = (
+            select(
+                Envio.tipo_paquete,
+                func.count(Envio.id).label("total")
+            )
+            .where(Envio.tipo_paquete.is_not(None))
+            .group_by(Envio.tipo_paquete)
+            .order_by(desc(func.count(Envio.id)))
+        )
+        paqs_raw = db.execute(stmt_paqs).all()
+        total_paqs = sum(int(p.total) for p in paqs_raw) or 1
+        tipos_paquete = [
+            TipoPaqueteItem(
+                tipo=str(p.tipo_paquete).title(),
+                total_envios=int(p.total),
+                porcentaje=round((int(p.total) / total_paqs) * 100, 1)
+            )
+            for p in paqs_raw
+        ]
+
         stats_admin = AdminStats(
             recaudacion_total=recaudacion_total_val,
             recaudacion_hoy=float(ingresos_hoy_val),
@@ -175,7 +273,17 @@ def obtener_resumen_dashboard(
             ticket_promedio=ticket_prom,
             distribucion_pagos=distribucion_pagos,
             estados_embudo=estados_embudo,
-            top_rutas=top_rutas
+            top_rutas=top_rutas,
+            departamentos_demanda=departamentos_demanda,
+            modalidades_envio=modalidades_envio,
+            tipos_paquete=tipos_paquete,
+            total_siniestrados=total_siniestrados_val,
+            tasa_siniestros=tasa_siniestros_val,
+            monto_siniestrado=monto_siniestrado_val,
+            total_cancelados=total_cancelados_val,
+            tasa_cancelados=tasa_cancelados_val,
+            monto_cancelado=monto_cancelado_val,
+            codigos_siniestrados=codigos_siniestrados_val
         )
 
     # 4. Métricas Específicas de CAJERO

@@ -69,6 +69,7 @@ class Envio(Base):
     destinatario = relationship("Cliente", foreign_keys=[destinatario_id])
     agencia_origen = relationship("Agencia", foreign_keys=[agencia_origen_id])
     agencia_destino = relationship("Agencia", foreign_keys=[agencia_destino_id])
+    registrado_por = relationship("Usuario", foreign_keys=[registrado_por_id])
     historial: Mapped[List["HistorialEnvio"]] = relationship("HistorialEnvio", back_populates="envio", cascade="all, delete-orphan", order_by="HistorialEnvio.creado_en")
 
     def __repr__(self) -> str:

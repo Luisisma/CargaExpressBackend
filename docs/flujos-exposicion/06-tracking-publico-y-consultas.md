@@ -7,8 +7,12 @@ Esta guía explica a fondo la arquitectura, seguridad y funcionamiento del módu
 ## 1. Visión General del Módulo
 
 El portal de Tracking es el servicio público de cara al cliente que permite:
-1. **Rastreo Abierto en Tiempo Real:** Cualquier usuario con su código de guía o tracking seguro (`CE-YYYY-XXXXXXX` o legados `CE-YYYY-NNNNN`) puede verificar el estado de su paquete sin necesidad de crear una cuenta o iniciar sesión.
-2. **Generación Criptográfica No Correlativa (OWASP API1 / API3):** Para evitar la enumeración de identificadores (*IDOR / Scraping masivo*) y no revelar el volumen comercial a competidores, el código se genera mediante `secrets` con alfabeto Base32 de Crockford (`32^7 = 34,359,738,368` combinaciones por año).
+1. **Rastreo Abierto en Tiempo Real:** Cualquier usuario con su código de guía o tracking seguro oficial puede verificar el estado de su paquete sin necesidad de crear una cuenta o iniciar sesión.
+2. **Generación Criptográfica No Correlativa y Partición por Series (OWASP API1 / API3):**
+   Para evitar la enumeración de identificadores (*IDOR / Scraping masivo*) y no revelar el volumen comercial a competidores, el código se genera mediante `secrets` con alfabeto **Base32 de Crockford** (`0123456789ABCDEFGHJKMNPQRSTVWXYZ`, excluyendo `I`, `L`, `O`, `U` para evitar ambigüedades de lectura humana), estructurado en dos series segregadas:
+   - **Serie Portal Web (`CE-YYYY-PXXXXXXX`):** Asignada a órdenes auto-registradas por clientes a través de la web pública (ej. `CE-2026-P8WJVNY`).
+   - **Serie Red Nacional (`CE-YYYY-NXXXXXXX`):** Asignada a admisiones directas en counter físico de agencias y dataset maestro nacional (ej. `CE-2026-N9CBH2A`).
+   - Cada serie ofrece un espacio de $32^7 = 34,359,738,368$ combinaciones no predecibles por año.
 3. **Protección de Datos Personales (PII / Ley 29733):** Enmascaramiento criptográfico de nombres, teléfonos y correos para evitar el raspado de datos personales.
 4. **Validación Oficial de Identidad Fiscal:** Búsqueda híbrida que consulta primero la base local y, de no existir, interroga en tiempo real a los servicios de **RENIEC** (DNI) y **SUNAT** (RUC) para autocompletar nombres legítimos.
 
@@ -151,6 +155,12 @@ Al registrar encomiendas o emitir comprobantes en mostrador, el sistema implemen
 }
 ```
 
+#### Manejo de Incidencias Graves y Siniestro en Tracking:
+Cuando una encomienda es declarada en estado `SINIESTRADO` (por robo, asalto armado o accidente):
+* El badge superior se tiñe de rojo institucional (`bg-danger`) con distintivo de advertencia.
+* Se activa el panel especial de **Incidencia en Carga (Siniestro Declarado)** informando la activación de la póliza de seguro y los canales de indemnización.
+* En la línea de tiempo, el evento de siniestro se representa con icono de alerta roja (`ShieldAlert`), borde de ruptura y detalle de la denuncia policial PNP.
+
 ---
 
 ## 6. Módulos de Código Exactos para Mostrar en la Exposición
@@ -180,3 +190,4 @@ Al registrar encomiendas o emitir comprobantes en mostrador, el sistema implemen
 | **¿Por qué la consulta de tracking no requiere iniciar sesión con usuario y contraseña?** | *"Porque es un servicio de cara al cliente final (B2C/C2C). Para conciliar la facilidad de acceso con la seguridad, el endpoint aplica un estricto filtrado que enmascara los nombres y nunca expone montos de cuentas bancarias, direcciones privadas ni datos sensibles (cumpliendo OWASP API3:2023 y Ley 29733)."* |
 | **¿Qué pasa si el servicio de RENIEC o SUNAT se cae o no tiene internet?** | *"El sistema cuenta con tolerancia a fallos: el Nivel 1 busca primero en la tabla local `clientes`. Si la API externa falla o no responde, el servicio captura la excepción de forma segura y devuelve `encontrado: false`, permitiendo al operador ingresar los nombres manualmente en la interfaz sin interrumpir la atención de ventanilla."* |
 | **¿Puede el cliente cancelar su pedido desde la web una vez creado?** | *"Sí, siempre y cuando el paquete permanezca en estado `registrado` y no haya sido pagado ni despachado. El remitente debe digitar su número de documento en la vista de tracking para comprobar su titularidad y ejecutar la cancelación voluntaria."* |
+| **¿Cómo responde la interfaz ante recargas forzadas (`F5`) o URLs directas en el navegador?** | *"El enrutamiento del cliente está blindado en `Tracking.jsx` con importaciones completas de `Link` (`react-router-dom`) y accesos defensivos null-safe (`?.`), garantizando que cualquier usuario que abra un enlace directo o recargue la página visualice el hito operativo sin experimentar caídas en pantalla blanca."* |

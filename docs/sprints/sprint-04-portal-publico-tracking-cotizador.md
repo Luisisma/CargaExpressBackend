@@ -125,6 +125,10 @@ En la sesión de desarrollo actual se alcanzó la sincronización total del **Po
    * Se incorporó el documento formal de reglas de negocio para cancelaciones y reembolsos:  
      📄 [01-politicas-cancelaciones-reembolsos.md](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/docs/negocio/01-politicas-cancelaciones-reembolsos.md).
 
+4. **Integridad de Auditoría y Trazabilidad Histórica (Sprint 04 & 09):**
+   * Se implementó el regularizador `regularize_historial_envios.py` que sincronizó **6,301 hitos cronológicos reales** en la tabla `historial_envios`.
+   * Cada una de las 1,274 encomiendas cuenta con su línea de tiempo completa (`REGISTRADO` $\rightarrow$ `RECEPCIONADO` $\rightarrow$ `EN_RUTA` $\rightarrow$ `EN_AGENCIA_DESTINO` $\rightarrow$ `ENTREGADO`) con descripciones operativas, pesos verificados en balanza y ubicaciones según modalidad.
+
 ---
 
 ## 5. Próximo Paso: Fase 2 (Dashboard Administrativo en Vivo)

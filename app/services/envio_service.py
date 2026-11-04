@@ -5,7 +5,7 @@ from sqlalchemy import select
 from datetime import datetime, timezone
 from app.models.envio import Envio, HistorialEnvio
 from app.models.usuario import Usuario
-from app.schemas.envio import RecepcionEnvioRequest, EntregaEnvioRequest, DeclararSiniestroRequest
+from app.schemas.envio import RecepcionEnvioRequest, EntregaEnvioRequest, DeclararSiniestroRequest, CancelarEnvioAdminRequest
 from decimal import Decimal
 from app.services.email_service import enviar_correo_cambio_estado
 
@@ -100,11 +100,14 @@ class EnvioService:
         peso_vol = round((req.largo_real_cm * req.ancho_real_cm * req.alto_real_cm) / 6000, 2)
         peso_liquidable = max(req.peso_real_kg, peso_vol)
 
+        tipo_paq = (envio.tipo_paquete or "caja").lower()
+        recargo_tipo_paquete = 4.00 if tipo_paq == "saco" else 0.00
+
         tarifa_base = 8.00
         tarifa_peso = round(peso_liquidable * 2.50, 2)
         recargo_dom = 12.00 if envio.tipo_envio in ["agencia_domicilio", "domicilio_domicilio"] else 0.00
         recargo_recojo = 15.00 if envio.tipo_envio in ["domicilio_agencia", "domicilio_domicilio"] else 0.00
-        nuevo_total = round(tarifa_base + tarifa_peso + recargo_dom + recargo_recojo, 2)
+        nuevo_total = round(tarifa_base + tarifa_peso + recargo_tipo_paquete + recargo_dom + recargo_recojo, 2)
 
         diferencia = nuevo_total - float(envio.precio_envio)
         mensaje_historial = "Recepcionado en agencia origen."
@@ -120,6 +123,12 @@ class EnvioService:
             envio.estado_pago = "pagado"
             envio.lugar_pago = "agencia"
             envio.forma_pago = medio_cobro 
+
+        # Asignar cajero/operador responsable y formalizar sede de ingreso fsico
+        if usuario_id:
+            envio.registrado_por_id = usuario_id
+        if agencia_id:
+            envio.agencia_origen_id = agencia_id
 
         # Actualizar la DB con las dimensiones físicas reales comprobadas
         envio.estado = "recepcionado"
@@ -353,6 +362,66 @@ class EnvioService:
             nuevo_estado="siniestrado",
             descripcion=desc,
             ubicacion=ubicacion_hito,
+            background_tasks=background_tasks
+        )
+
+        return envio
+
+    @classmethod
+    def cancelar_admin(
+        cls,
+        db: Session,
+        codigo_tracking: str,
+        usuario_id: int,
+        req: CancelarEnvioAdminRequest,
+        background_tasks: Optional[BackgroundTasks] = None
+    ):
+        codigo_limpio = codigo_tracking.strip().upper()
+        envio = db.execute(
+            select(Envio).where(Envio.codigo_tracking == codigo_limpio)
+        ).scalar_one_or_none()
+
+        if not envio:
+            raise ValueError(f"No se encontró el envío {codigo_limpio}.")
+
+        if envio.estado in ["en_ruta", "en_agencia_destino", "en_reparto", "entregado"]:
+            raise ValueError(
+                f"No se puede anular el envío en estado '{envio.estado}'. "
+                "La carga ya fue despachada o entregada al destinatario."
+            )
+
+        if envio.estado in ["anulado", "siniestrado"]:
+            raise ValueError(f"El envío ya se encuentra en estado '{envio.estado}'.")
+
+        envio.estado = "anulado"
+        envio.actualizado_en = datetime.now(timezone.utc)
+
+        usuario = db.get(Usuario, usuario_id)
+        operador_nombre = usuario.nombre_completo if usuario else f"Usuario #{usuario_id}"
+
+        detalle = f"Envío anulado por {operador_nombre}. Motivo: {req.motivo}."
+        if req.retencion_aplicada and req.retencion_aplicada > 0:
+            detalle += f" Retención aplicada por gastos operativos: S/ {req.retencion_aplicada:.2f}."
+        elif envio.estado_pago == "pagado":
+            detalle += " Aplica extorno conforme a políticas de cancelación de CargaExpress."
+
+        ubicacion = f"Agencia {usuario.agencia.nombre}" if (usuario and usuario.agencia and hasattr(usuario.agencia, 'nombre')) else "Sede Administrativa"
+
+        db.add(HistorialEnvio(
+            envio_id=envio.id,
+            estado="anulado",
+            descripcion=detalle,
+            ubicacion=ubicacion,
+            usuario_id=usuario_id
+        ))
+        db.commit()
+        db.refresh(envio)
+
+        _notificar_clientes_cambio_estado(
+            envio=envio,
+            nuevo_estado="anulado",
+            descripcion=detalle,
+            ubicacion=ubicacion,
             background_tasks=background_tasks
         )
 

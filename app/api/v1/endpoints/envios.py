@@ -2,7 +2,7 @@ from typing import List, Optional
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from sqlalchemy.orm import Session
-from sqlalchemy import select, or_, desc
+from sqlalchemy import select, or_, desc, func
 
 from app.api.deps import get_db, require_role
 from app.models.usuario import Usuario
@@ -22,7 +22,8 @@ from app.schemas.envio import (
     IniciarRepartoRequest,
     EntregaCourierRequest,
     CourierEntregaItem,
-    DeclararSiniestroRequest
+    DeclararSiniestroRequest,
+    CancelarEnvioAdminRequest
 )
 from app.services.envio_service import EnvioService
 from app.services.courier_service import CourierService
@@ -38,7 +39,8 @@ router = APIRouter()
     description="Permite buscar y filtrar encomiendas por estado logístico, agencia o texto libre."
 )
 def listar_envios(
-    estado: Optional[str] = Query(None, description="Filtrar por estado: registrado, en_almacen_origen, en_transito, entregado"),
+    estado: Optional[str] = Query(None, description="Filtrar por estado: registrado, recepcionado, en_transito, entregado, siniestrado, cancelado"),
+    estado_pago: Optional[str] = Query(None, description="Filtrar por estado de pago: pagado, pendiente, anulado"),
     busqueda: Optional[str] = Query(None, description="Buscar por código de tracking o nombre de remitente"),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
@@ -51,7 +53,22 @@ def listar_envios(
     )
 
     if estado and estado.strip():
-        stmt = stmt.where(Envio.estado == estado.strip().lower())
+        est = estado.strip().lower()
+        if est in ["cancelado", "anulado"]:
+            stmt = stmt.where(func.lower(Envio.estado).in_(["cancelado", "anulado"]))
+        elif est == "siniestrado":
+            stmt = stmt.where(func.lower(Envio.estado) == "siniestrado")
+        elif est in ["en_ruta", "en_transito"]:
+            stmt = stmt.where(func.lower(Envio.estado).in_(["en_ruta", "en_transito"]))
+        elif est in ["recepcionado", "en_almacen_origen"]:
+            stmt = stmt.where(func.lower(Envio.estado).in_(["recepcionado", "en_almacen_origen"]))
+        elif est in ["en_agencia_destino", "almacen_destino"]:
+            stmt = stmt.where(func.lower(Envio.estado).in_(["en_agencia_destino", "almacen_destino"]))
+        else:
+            stmt = stmt.where(func.lower(Envio.estado) == est)
+
+    if estado_pago and estado_pago.strip():
+        stmt = stmt.where(func.lower(Envio.estado_pago) == estado_pago.strip().lower())
 
     if busqueda and busqueda.strip():
         term = f"%{busqueda.strip()}%"
@@ -411,6 +428,34 @@ def declarar_siniestro_envio(
             background_tasks=background_tasks
         )
         return SuccessResponse(success=True, data="Siniestro registrado exitosamente. La encomienda ha sido congelada para liquidación de póliza.")
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.post(
+    "/{identificador}/cancelar",
+    response_model=SuccessResponse[str],
+    summary="Anular / Cancelar encomienda (Administrador / Supervisor / Cajero)",
+    description="Permite anular envíos en estado registrado o recepcionado antes de su despacho a ruta interprovincial."
+)
+def cancelar_envio_admin(
+    identificador: str,
+    req: CancelarEnvioAdminRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(require_role(["ADMINISTRADOR", "SUPERVISOR", "CAJERO"]))
+):
+    try:
+        EnvioService.cancelar_admin(
+            db=db,
+            codigo_tracking=identificador,
+            usuario_id=current_user.id,
+            req=req,
+            background_tasks=background_tasks
+        )
+        return SuccessResponse(success=True, data=f"El envío {identificador} ha sido cancelado/anulado exitosamente.")
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

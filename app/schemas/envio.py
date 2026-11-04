@@ -172,3 +172,8 @@ class CourierEntregaItem(BaseModel):
         return dt.isoformat()
 
 
+class CancelarEnvioAdminRequest(BaseModel):
+    motivo: str = Field(..., min_length=3, max_length=300, description="Motivo sustentado de la anulación")
+    retencion_aplicada: Optional[float] = Field(0.0, description="Monto retenido por gastos operativos (hasta 10%)")
+
+

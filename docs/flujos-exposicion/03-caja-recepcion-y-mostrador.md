@@ -87,7 +87,8 @@ sequenceDiagram
   * **Dimensiones bulto:** Largo, Ancho y Alto con mínimo obligatorio de $1$ cm. Se prohíbe el valor `0` o campos vacíos para evitar distorsiones volumétricas y errores 422.
   * $\text{Peso Volumétrico} = \frac{\text{Largo} \times \text{Ancho} \times \text{Alto}}{6000}$
   * $\text{Peso Liquidable} = \max(\text{Peso Balanza}, \text{Peso Volumétrico})$
-  * $\text{Tarifa Oficial} = 8.00 + (\text{Peso Liquidable} \times 2.50)$
+  * $\text{Tarifa Oficial} = 8.00 + (\text{Peso Liquidable} \times 2.50) + \text{Recargos}$
+  * **Recargos de Embalaje Especial:** Para bultos tipo `saco`, aplica un recargo automático de **+S/ 4.00** por concepto de estiba pesada y manipulación especial, garantizando paridad exacta entre cotizador web y balanza física.
 * **Si el cliente declaró menos peso en la web:** 
   * Si ya estaba pagado online, el sistema activa automáticamente el modo **Reintegro por Exceso de Peso**, cobrando únicamente la diferencia (ej. $+\text{S/ } 2.50$).
   * Si estaba pendiente en caja, el cajero cobra el nuevo total liquidado oficial.
@@ -122,6 +123,16 @@ Si un cliente transfiere por error un monto mayor al liquidado en ventanilla (Ya
   * **Re-Yapeo Digital:** Extorno digital revertido exclusivamente hacia el mismo número y titular de la cuenta bancaria de origen.
   * **Saldo a Favor:** Acreditación del exceso en la cuenta del cliente (`clientes.saldo_credito`) para futuros envíos.
   * **Montos atípicos (> S/ 500.00):** Se abre expediente con DNI y voucher original, tramitándose la devolución por transferencia bancaria CCI en 24-48 horas por Tesorería.
+
+### F. Regla `BR-CAJ-06`: Criterio Salomónico de Control de Caja y Jornada Local (UTC-5)
+Para garantizar la integridad del cuadre de caja ante pre-registros web o pruebas multi-sede:
+1. **Pertenencia al Turno del Cajero:** Una transacción ingresa a la gaveta si:
+   - Pertenece a la sede operativa asignada (`agencia_origen_id == sede_id`).
+   - **O** fue cobrada personalmente por el cajero en turno (`registrado_por_id == current_user.id`).
+   - **O** cuenta con un hito de recepción asentado por dicho colaborador en `historial_envios`.
+2. **Corte Operativo en Horario Peruano (UTC-5):**
+   El cálculo de jornada no corta a las 19:00 horas (medianoche UTC), sino que opera sobre la hora local de Perú (`America/Lima`) y evalúa `func.coalesce(actualizado_en, creado_en)`, asegurando que pre-registros hechos en días previos se contabilicen en el momento exacto en que ingresa el dinero físico a ventanilla.
+3. **Selector Dinámico de Sedes:** Frontend conectado dinámicamente con `agenciaService` para alternar la supervisión entre sedes provinciales.
 
 ---
 

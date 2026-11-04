@@ -2,10 +2,10 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, List
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, func, desc, or_
 
 from app.models.usuario import Usuario
-from app.models.envio import Envio
+from app.models.envio import Envio, HistorialEnvio
 from app.models.agencia import Agencia
 from app.schemas.caja import (
     ResumenCajaResponse,
@@ -26,6 +26,58 @@ class CajaService:
     """
 
     @classmethod
+    def _construir_condiciones(
+        cls,
+        sede_id: int,
+        current_user: Usuario,
+        rol_usuario: str,
+        agencia_id: Optional[int] = None
+    ):
+        ahora_utc = datetime.now(timezone.utc)
+        # Operación en huso horario peruano (UTC - 5)
+        ahora_peru = ahora_utc - timedelta(hours=5)
+        inicio_hoy_peru = datetime(ahora_peru.year, ahora_peru.month, ahora_peru.day, 0, 0, 0, tzinfo=timezone.utc)
+        # En UTC, la medianoche peruana corresponde a +5h
+        inicio_jornada = inicio_hoy_peru + timedelta(hours=5)
+        # Margen tolerante para abarcar la jornada activa y las últimas 24h de pruebas continuas
+        inicio_corte = min(inicio_jornada, ahora_utc - timedelta(hours=24))
+
+        # Fecha de cobro/admisión: preferir actualizado_en (momento del cobro/balanza) o creado_en
+        fecha_operacion = func.coalesce(Envio.actualizado_en, Envio.creado_en)
+
+        # Subconsulta de envíos recepcionados/cobrados por este colaborador
+        subq_cajero = select(HistorialEnvio.envio_id).where(
+            HistorialEnvio.usuario_id == current_user.id,
+            HistorialEnvio.estado.in_(["recepcionado", "entregado"])
+        )
+
+        # Regla salomónica de asignación:
+        # Si es CAJERO:
+        # Cuenta los envíos de su sede asignada O cobrados personalmente por él/ella
+        if rol_usuario == "CAJERO":
+            filtro_sede_colaborador = or_(
+                Envio.agencia_origen_id == sede_id,
+                Envio.registrado_por_id == current_user.id,
+                Envio.id.in_(subq_cajero)
+            )
+        else:
+            # Si es ADMIN o SUPERVISOR:
+            if agencia_id:
+                filtro_sede_colaborador = Envio.agencia_origen_id == sede_id
+            else:
+                filtro_sede_colaborador = or_(
+                    Envio.agencia_origen_id == sede_id,
+                    Envio.registrado_por_id == current_user.id,
+                    Envio.id.in_(subq_cajero)
+                )
+
+        return [
+            filtro_sede_colaborador,
+            Envio.estado_pago == "pagado",
+            fecha_operacion >= inicio_corte
+        ]
+
+    @classmethod
     def obtener_resumen(
         cls,
         db: Session,
@@ -34,9 +86,9 @@ class CajaService:
     ) -> ResumenCajaResponse:
         rol_usuario = (current_user.tipo or "cajero").upper()
         
-        # Restricción RBAC: Cajeros solo acceden a su propia agencia asignada
+        # Restricción RBAC: Cajeros ven por defecto su propia agencia asignada o la solicitada
         if rol_usuario == "CAJERO":
-            sede_id = current_user.agencia_id or 1
+            sede_id = agencia_id or current_user.agencia_id or 1
         else:
             # Administrador o Supervisor pueden consultar una sede específica o su defecto
             sede_id = agencia_id or current_user.agencia_id or 1
@@ -44,18 +96,12 @@ class CajaService:
         agencia = db.get(Agencia, sede_id)
         agencia_nombre = f"Agencia {agencia.departamento.title()} - {agencia.nombre.title()}" if agencia else "Agencia Principal"
 
-        # Rango de tiempo: Jornada de hoy (UTC)
-        ahora = datetime.now(timezone.utc)
-        inicio_hoy = datetime(ahora.year, ahora.month, ahora.day, 0, 0, 0, tzinfo=timezone.utc)
-        inicio_manana = inicio_hoy + timedelta(days=1)
-
-        # Base de consulta para envíos cobrados en la agencia de origen hoy
-        condiciones = [
-            Envio.agencia_origen_id == sede_id,
-            Envio.estado_pago == "pagado",
-            Envio.creado_en >= inicio_hoy,
-            Envio.creado_en < inicio_manana
-        ]
+        condiciones = cls._construir_condiciones(
+            sede_id=sede_id,
+            current_user=current_user,
+            rol_usuario=rol_usuario,
+            agencia_id=agencia_id
+        )
 
         # Cobros en Efectivo (Dinero físico en ventanilla)
         efectivo_val = float(db.scalar(
@@ -94,14 +140,15 @@ class CajaService:
         stmt_movs = (
             select(Envio)
             .where(*condiciones)
-            .order_by(desc(Envio.creado_en))
-            .limit(20)
+            .order_by(desc(func.coalesce(Envio.actualizado_en, Envio.creado_en)))
+            .limit(30)
         )
         envios_db = list(db.execute(stmt_movs).scalars().all())
 
         movimientos: List[MovimientoCajaItem] = []
         for e in envios_db:
-            hora_str = e.creado_en.strftime("%I:%M %p") if e.creado_en else "N/A"
+            fecha_cobro = e.actualizado_en or e.creado_en
+            hora_str = fecha_cobro.strftime("%I:%M %p") if fecha_cobro else "N/A"
             reg_usr = getattr(e, 'registrado_por', None)
             cajero_nombre = reg_usr.nombre_completo if reg_usr else current_user.nombre_completo
             remitente_nombre = e.remitente.nombre_completo if e.remitente else "Cliente Varios"
@@ -151,16 +198,12 @@ class CajaService:
         rol_usuario = (current_user.tipo or "cajero").upper()
         sede_id = current_user.agencia_id or 1 if rol_usuario == "CAJERO" else (agencia_id or current_user.agencia_id or 1)
 
-        ahora = datetime.now(timezone.utc)
-        inicio_hoy = datetime(ahora.year, ahora.month, ahora.day, 0, 0, 0, tzinfo=timezone.utc)
-        inicio_manana = inicio_hoy + timedelta(days=1)
-
-        condiciones = [
-            Envio.agencia_origen_id == sede_id,
-            Envio.estado_pago == "pagado",
-            Envio.creado_en >= inicio_hoy,
-            Envio.creado_en < inicio_manana
-        ]
+        condiciones = cls._construir_condiciones(
+            sede_id=sede_id,
+            current_user=current_user,
+            rol_usuario=rol_usuario,
+            agencia_id=agencia_id
+        )
 
         efectivo_val = float(db.scalar(
             select(func.coalesce(func.sum(Envio.precio_envio), 0.0)).where(

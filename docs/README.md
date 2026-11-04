@@ -61,7 +61,8 @@ CargaExpressBackend/docs/
 │   ├── 01-arquitectura-backend-capas.md             # Clean Layers: Routers, Services, Schemas y ORM
 │   ├── 02-modelo-datos-persistencia.md            # Diagrama ERD, 3NF, integridad referencial y PostgreSQL/SQLite
 │   ├── 03-seguridad-autenticacion-rbac.md         # JWT, TOTP 2FA, invalidación sesion_version y RBAC
-│   └── 04-guia-backup-restauracion-sqlite.md       # Backup SQL dump, copia binaria y restauración segura
+│   ├── 04-guia-backup-restauracion-sqlite.md       # Backup SQL dump, copia binaria y restauración segura
+│   └── 05-guia-ejecutables-scripts-y-semillas.md   # Catálogo de scripts ejecutables por caso de uso (Power BI, Tracking, Seeds)
 │
 ├── negocio/                                         # 📋 REGLAS DE NEGOCIO Y POLÍTICAS (BUSINESS RULES)
 │   ├── 01-politicas-cancelaciones-reembolsos.md     # BR-CAN: Cancelaciones, Notas de Crédito y Reembolsos

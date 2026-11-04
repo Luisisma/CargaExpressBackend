@@ -1,0 +1,366 @@
+﻿tiempo_id,fecha,anio,mes_num,nombre_mes,dia,dia_semana,trimestre,es_fin_semana
+20260101,2026-01-01,2026,1,Enero,1,Jueves,T1,Día Laboral
+20260102,2026-01-02,2026,1,Enero,2,Viernes,T1,Día Laboral
+20260103,2026-01-03,2026,1,Enero,3,Sábado,T1,Fin de Semana
+20260104,2026-01-04,2026,1,Enero,4,Domingo,T1,Fin de Semana
+20260105,2026-01-05,2026,1,Enero,5,Lunes,T1,Día Laboral
+20260106,2026-01-06,2026,1,Enero,6,Martes,T1,Día Laboral
+20260107,2026-01-07,2026,1,Enero,7,Miércoles,T1,Día Laboral
+20260108,2026-01-08,2026,1,Enero,8,Jueves,T1,Día Laboral
+20260109,2026-01-09,2026,1,Enero,9,Viernes,T1,Día Laboral
+20260110,2026-01-10,2026,1,Enero,10,Sábado,T1,Fin de Semana
+20260111,2026-01-11,2026,1,Enero,11,Domingo,T1,Fin de Semana
+20260112,2026-01-12,2026,1,Enero,12,Lunes,T1,Día Laboral
+20260113,2026-01-13,2026,1,Enero,13,Martes,T1,Día Laboral
+20260114,2026-01-14,2026,1,Enero,14,Miércoles,T1,Día Laboral
+20260115,2026-01-15,2026,1,Enero,15,Jueves,T1,Día Laboral
+20260116,2026-01-16,2026,1,Enero,16,Viernes,T1,Día Laboral
+20260117,2026-01-17,2026,1,Enero,17,Sábado,T1,Fin de Semana
+20260118,2026-01-18,2026,1,Enero,18,Domingo,T1,Fin de Semana
+20260119,2026-01-19,2026,1,Enero,19,Lunes,T1,Día Laboral
+20260120,2026-01-20,2026,1,Enero,20,Martes,T1,Día Laboral
+20260121,2026-01-21,2026,1,Enero,21,Miércoles,T1,Día Laboral
+20260122,2026-01-22,2026,1,Enero,22,Jueves,T1,Día Laboral
+20260123,2026-01-23,2026,1,Enero,23,Viernes,T1,Día Laboral
+20260124,2026-01-24,2026,1,Enero,24,Sábado,T1,Fin de Semana
+20260125,2026-01-25,2026,1,Enero,25,Domingo,T1,Fin de Semana
+20260126,2026-01-26,2026,1,Enero,26,Lunes,T1,Día Laboral
+20260127,2026-01-27,2026,1,Enero,27,Martes,T1,Día Laboral
+20260128,2026-01-28,2026,1,Enero,28,Miércoles,T1,Día Laboral
+20260129,2026-01-29,2026,1,Enero,29,Jueves,T1,Día Laboral
+20260130,2026-01-30,2026,1,Enero,30,Viernes,T1,Día Laboral
+20260131,2026-01-31,2026,1,Enero,31,Sábado,T1,Fin de Semana
+20260201,2026-02-01,2026,2,Febrero,1,Domingo,T1,Fin de Semana
+20260202,2026-02-02,2026,2,Febrero,2,Lunes,T1,Día Laboral
+20260203,2026-02-03,2026,2,Febrero,3,Martes,T1,Día Laboral
+20260204,2026-02-04,2026,2,Febrero,4,Miércoles,T1,Día Laboral
+20260205,2026-02-05,2026,2,Febrero,5,Jueves,T1,Día Laboral
+20260206,2026-02-06,2026,2,Febrero,6,Viernes,T1,Día Laboral
+20260207,2026-02-07,2026,2,Febrero,7,Sábado,T1,Fin de Semana
+20260208,2026-02-08,2026,2,Febrero,8,Domingo,T1,Fin de Semana
+20260209,2026-02-09,2026,2,Febrero,9,Lunes,T1,Día Laboral
+20260210,2026-02-10,2026,2,Febrero,10,Martes,T1,Día Laboral
+20260211,2026-02-11,2026,2,Febrero,11,Miércoles,T1,Día Laboral
+20260212,2026-02-12,2026,2,Febrero,12,Jueves,T1,Día Laboral
+20260213,2026-02-13,2026,2,Febrero,13,Viernes,T1,Día Laboral
+20260214,2026-02-14,2026,2,Febrero,14,Sábado,T1,Fin de Semana
+20260215,2026-02-15,2026,2,Febrero,15,Domingo,T1,Fin de Semana
+20260216,2026-02-16,2026,2,Febrero,16,Lunes,T1,Día Laboral
+20260217,2026-02-17,2026,2,Febrero,17,Martes,T1,Día Laboral
+20260218,2026-02-18,2026,2,Febrero,18,Miércoles,T1,Día Laboral
+20260219,2026-02-19,2026,2,Febrero,19,Jueves,T1,Día Laboral
+20260220,2026-02-20,2026,2,Febrero,20,Viernes,T1,Día Laboral
+20260221,2026-02-21,2026,2,Febrero,21,Sábado,T1,Fin de Semana
+20260222,2026-02-22,2026,2,Febrero,22,Domingo,T1,Fin de Semana
+20260223,2026-02-23,2026,2,Febrero,23,Lunes,T1,Día Laboral
+20260224,2026-02-24,2026,2,Febrero,24,Martes,T1,Día Laboral
+20260225,2026-02-25,2026,2,Febrero,25,Miércoles,T1,Día Laboral
+20260226,2026-02-26,2026,2,Febrero,26,Jueves,T1,Día Laboral
+20260227,2026-02-27,2026,2,Febrero,27,Viernes,T1,Día Laboral
+20260228,2026-02-28,2026,2,Febrero,28,Sábado,T1,Fin de Semana
+20260301,2026-03-01,2026,3,Marzo,1,Domingo,T1,Fin de Semana
+20260302,2026-03-02,2026,3,Marzo,2,Lunes,T1,Día Laboral
+20260303,2026-03-03,2026,3,Marzo,3,Martes,T1,Día Laboral
+20260304,2026-03-04,2026,3,Marzo,4,Miércoles,T1,Día Laboral
+20260305,2026-03-05,2026,3,Marzo,5,Jueves,T1,Día Laboral
+20260306,2026-03-06,2026,3,Marzo,6,Viernes,T1,Día Laboral
+20260307,2026-03-07,2026,3,Marzo,7,Sábado,T1,Fin de Semana
+20260308,2026-03-08,2026,3,Marzo,8,Domingo,T1,Fin de Semana
+20260309,2026-03-09,2026,3,Marzo,9,Lunes,T1,Día Laboral
+20260310,2026-03-10,2026,3,Marzo,10,Martes,T1,Día Laboral
+20260311,2026-03-11,2026,3,Marzo,11,Miércoles,T1,Día Laboral
+20260312,2026-03-12,2026,3,Marzo,12,Jueves,T1,Día Laboral
+20260313,2026-03-13,2026,3,Marzo,13,Viernes,T1,Día Laboral
+20260314,2026-03-14,2026,3,Marzo,14,Sábado,T1,Fin de Semana
+20260315,2026-03-15,2026,3,Marzo,15,Domingo,T1,Fin de Semana
+20260316,2026-03-16,2026,3,Marzo,16,Lunes,T1,Día Laboral
+20260317,2026-03-17,2026,3,Marzo,17,Martes,T1,Día Laboral
+20260318,2026-03-18,2026,3,Marzo,18,Miércoles,T1,Día Laboral
+20260319,2026-03-19,2026,3,Marzo,19,Jueves,T1,Día Laboral
+20260320,2026-03-20,2026,3,Marzo,20,Viernes,T1,Día Laboral
+20260321,2026-03-21,2026,3,Marzo,21,Sábado,T1,Fin de Semana
+20260322,2026-03-22,2026,3,Marzo,22,Domingo,T1,Fin de Semana
+20260323,2026-03-23,2026,3,Marzo,23,Lunes,T1,Día Laboral
+20260324,2026-03-24,2026,3,Marzo,24,Martes,T1,Día Laboral
+20260325,2026-03-25,2026,3,Marzo,25,Miércoles,T1,Día Laboral
+20260326,2026-03-26,2026,3,Marzo,26,Jueves,T1,Día Laboral
+20260327,2026-03-27,2026,3,Marzo,27,Viernes,T1,Día Laboral
+20260328,2026-03-28,2026,3,Marzo,28,Sábado,T1,Fin de Semana
+20260329,2026-03-29,2026,3,Marzo,29,Domingo,T1,Fin de Semana
+20260330,2026-03-30,2026,3,Marzo,30,Lunes,T1,Día Laboral
+20260331,2026-03-31,2026,3,Marzo,31,Martes,T1,Día Laboral
+20260401,2026-04-01,2026,4,Abril,1,Miércoles,T2,Día Laboral
+20260402,2026-04-02,2026,4,Abril,2,Jueves,T2,Día Laboral
+20260403,2026-04-03,2026,4,Abril,3,Viernes,T2,Día Laboral
+20260404,2026-04-04,2026,4,Abril,4,Sábado,T2,Fin de Semana
+20260405,2026-04-05,2026,4,Abril,5,Domingo,T2,Fin de Semana
+20260406,2026-04-06,2026,4,Abril,6,Lunes,T2,Día Laboral
+20260407,2026-04-07,2026,4,Abril,7,Martes,T2,Día Laboral
+20260408,2026-04-08,2026,4,Abril,8,Miércoles,T2,Día Laboral
+20260409,2026-04-09,2026,4,Abril,9,Jueves,T2,Día Laboral
+20260410,2026-04-10,2026,4,Abril,10,Viernes,T2,Día Laboral
+20260411,2026-04-11,2026,4,Abril,11,Sábado,T2,Fin de Semana
+20260412,2026-04-12,2026,4,Abril,12,Domingo,T2,Fin de Semana
+20260413,2026-04-13,2026,4,Abril,13,Lunes,T2,Día Laboral
+20260414,2026-04-14,2026,4,Abril,14,Martes,T2,Día Laboral
+20260415,2026-04-15,2026,4,Abril,15,Miércoles,T2,Día Laboral
+20260416,2026-04-16,2026,4,Abril,16,Jueves,T2,Día Laboral
+20260417,2026-04-17,2026,4,Abril,17,Viernes,T2,Día Laboral
+20260418,2026-04-18,2026,4,Abril,18,Sábado,T2,Fin de Semana
+20260419,2026-04-19,2026,4,Abril,19,Domingo,T2,Fin de Semana
+20260420,2026-04-20,2026,4,Abril,20,Lunes,T2,Día Laboral
+20260421,2026-04-21,2026,4,Abril,21,Martes,T2,Día Laboral
+20260422,2026-04-22,2026,4,Abril,22,Miércoles,T2,Día Laboral
+20260423,2026-04-23,2026,4,Abril,23,Jueves,T2,Día Laboral
+20260424,2026-04-24,2026,4,Abril,24,Viernes,T2,Día Laboral
+20260425,2026-04-25,2026,4,Abril,25,Sábado,T2,Fin de Semana
+20260426,2026-04-26,2026,4,Abril,26,Domingo,T2,Fin de Semana
+20260427,2026-04-27,2026,4,Abril,27,Lunes,T2,Día Laboral
+20260428,2026-04-28,2026,4,Abril,28,Martes,T2,Día Laboral
+20260429,2026-04-29,2026,4,Abril,29,Miércoles,T2,Día Laboral
+20260430,2026-04-30,2026,4,Abril,30,Jueves,T2,Día Laboral
+20260501,2026-05-01,2026,5,Mayo,1,Viernes,T2,Día Laboral
+20260502,2026-05-02,2026,5,Mayo,2,Sábado,T2,Fin de Semana
+20260503,2026-05-03,2026,5,Mayo,3,Domingo,T2,Fin de Semana
+20260504,2026-05-04,2026,5,Mayo,4,Lunes,T2,Día Laboral
+20260505,2026-05-05,2026,5,Mayo,5,Martes,T2,Día Laboral
+20260506,2026-05-06,2026,5,Mayo,6,Miércoles,T2,Día Laboral
+20260507,2026-05-07,2026,5,Mayo,7,Jueves,T2,Día Laboral
+20260508,2026-05-08,2026,5,Mayo,8,Viernes,T2,Día Laboral
+20260509,2026-05-09,2026,5,Mayo,9,Sábado,T2,Fin de Semana
+20260510,2026-05-10,2026,5,Mayo,10,Domingo,T2,Fin de Semana
+20260511,2026-05-11,2026,5,Mayo,11,Lunes,T2,Día Laboral
+20260512,2026-05-12,2026,5,Mayo,12,Martes,T2,Día Laboral
+20260513,2026-05-13,2026,5,Mayo,13,Miércoles,T2,Día Laboral
+20260514,2026-05-14,2026,5,Mayo,14,Jueves,T2,Día Laboral
+20260515,2026-05-15,2026,5,Mayo,15,Viernes,T2,Día Laboral
+20260516,2026-05-16,2026,5,Mayo,16,Sábado,T2,Fin de Semana
+20260517,2026-05-17,2026,5,Mayo,17,Domingo,T2,Fin de Semana
+20260518,2026-05-18,2026,5,Mayo,18,Lunes,T2,Día Laboral
+20260519,2026-05-19,2026,5,Mayo,19,Martes,T2,Día Laboral
+20260520,2026-05-20,2026,5,Mayo,20,Miércoles,T2,Día Laboral
+20260521,2026-05-21,2026,5,Mayo,21,Jueves,T2,Día Laboral
+20260522,2026-05-22,2026,5,Mayo,22,Viernes,T2,Día Laboral
+20260523,2026-05-23,2026,5,Mayo,23,Sábado,T2,Fin de Semana
+20260524,2026-05-24,2026,5,Mayo,24,Domingo,T2,Fin de Semana
+20260525,2026-05-25,2026,5,Mayo,25,Lunes,T2,Día Laboral
+20260526,2026-05-26,2026,5,Mayo,26,Martes,T2,Día Laboral
+20260527,2026-05-27,2026,5,Mayo,27,Miércoles,T2,Día Laboral
+20260528,2026-05-28,2026,5,Mayo,28,Jueves,T2,Día Laboral
+20260529,2026-05-29,2026,5,Mayo,29,Viernes,T2,Día Laboral
+20260530,2026-05-30,2026,5,Mayo,30,Sábado,T2,Fin de Semana
+20260531,2026-05-31,2026,5,Mayo,31,Domingo,T2,Fin de Semana
+20260601,2026-06-01,2026,6,Junio,1,Lunes,T2,Día Laboral
+20260602,2026-06-02,2026,6,Junio,2,Martes,T2,Día Laboral
+20260603,2026-06-03,2026,6,Junio,3,Miércoles,T2,Día Laboral
+20260604,2026-06-04,2026,6,Junio,4,Jueves,T2,Día Laboral
+20260605,2026-06-05,2026,6,Junio,5,Viernes,T2,Día Laboral
+20260606,2026-06-06,2026,6,Junio,6,Sábado,T2,Fin de Semana
+20260607,2026-06-07,2026,6,Junio,7,Domingo,T2,Fin de Semana
+20260608,2026-06-08,2026,6,Junio,8,Lunes,T2,Día Laboral
+20260609,2026-06-09,2026,6,Junio,9,Martes,T2,Día Laboral
+20260610,2026-06-10,2026,6,Junio,10,Miércoles,T2,Día Laboral
+20260611,2026-06-11,2026,6,Junio,11,Jueves,T2,Día Laboral
+20260612,2026-06-12,2026,6,Junio,12,Viernes,T2,Día Laboral
+20260613,2026-06-13,2026,6,Junio,13,Sábado,T2,Fin de Semana
+20260614,2026-06-14,2026,6,Junio,14,Domingo,T2,Fin de Semana
+20260615,2026-06-15,2026,6,Junio,15,Lunes,T2,Día Laboral
+20260616,2026-06-16,2026,6,Junio,16,Martes,T2,Día Laboral
+20260617,2026-06-17,2026,6,Junio,17,Miércoles,T2,Día Laboral
+20260618,2026-06-18,2026,6,Junio,18,Jueves,T2,Día Laboral
+20260619,2026-06-19,2026,6,Junio,19,Viernes,T2,Día Laboral
+20260620,2026-06-20,2026,6,Junio,20,Sábado,T2,Fin de Semana
+20260621,2026-06-21,2026,6,Junio,21,Domingo,T2,Fin de Semana
+20260622,2026-06-22,2026,6,Junio,22,Lunes,T2,Día Laboral
+20260623,2026-06-23,2026,6,Junio,23,Martes,T2,Día Laboral
+20260624,2026-06-24,2026,6,Junio,24,Miércoles,T2,Día Laboral
+20260625,2026-06-25,2026,6,Junio,25,Jueves,T2,Día Laboral
+20260626,2026-06-26,2026,6,Junio,26,Viernes,T2,Día Laboral
+20260627,2026-06-27,2026,6,Junio,27,Sábado,T2,Fin de Semana
+20260628,2026-06-28,2026,6,Junio,28,Domingo,T2,Fin de Semana
+20260629,2026-06-29,2026,6,Junio,29,Lunes,T2,Día Laboral
+20260630,2026-06-30,2026,6,Junio,30,Martes,T2,Día Laboral
+20260701,2026-07-01,2026,7,Julio,1,Miércoles,T3,Día Laboral
+20260702,2026-07-02,2026,7,Julio,2,Jueves,T3,Día Laboral
+20260703,2026-07-03,2026,7,Julio,3,Viernes,T3,Día Laboral
+20260704,2026-07-04,2026,7,Julio,4,Sábado,T3,Fin de Semana
+20260705,2026-07-05,2026,7,Julio,5,Domingo,T3,Fin de Semana
+20260706,2026-07-06,2026,7,Julio,6,Lunes,T3,Día Laboral
+20260707,2026-07-07,2026,7,Julio,7,Martes,T3,Día Laboral
+20260708,2026-07-08,2026,7,Julio,8,Miércoles,T3,Día Laboral
+20260709,2026-07-09,2026,7,Julio,9,Jueves,T3,Día Laboral
+20260710,2026-07-10,2026,7,Julio,10,Viernes,T3,Día Laboral
+20260711,2026-07-11,2026,7,Julio,11,Sábado,T3,Fin de Semana
+20260712,2026-07-12,2026,7,Julio,12,Domingo,T3,Fin de Semana
+20260713,2026-07-13,2026,7,Julio,13,Lunes,T3,Día Laboral
+20260714,2026-07-14,2026,7,Julio,14,Martes,T3,Día Laboral
+20260715,2026-07-15,2026,7,Julio,15,Miércoles,T3,Día Laboral
+20260716,2026-07-16,2026,7,Julio,16,Jueves,T3,Día Laboral
+20260717,2026-07-17,2026,7,Julio,17,Viernes,T3,Día Laboral
+20260718,2026-07-18,2026,7,Julio,18,Sábado,T3,Fin de Semana
+20260719,2026-07-19,2026,7,Julio,19,Domingo,T3,Fin de Semana
+20260720,2026-07-20,2026,7,Julio,20,Lunes,T3,Día Laboral
+20260721,2026-07-21,2026,7,Julio,21,Martes,T3,Día Laboral
+20260722,2026-07-22,2026,7,Julio,22,Miércoles,T3,Día Laboral
+20260723,2026-07-23,2026,7,Julio,23,Jueves,T3,Día Laboral
+20260724,2026-07-24,2026,7,Julio,24,Viernes,T3,Día Laboral
+20260725,2026-07-25,2026,7,Julio,25,Sábado,T3,Fin de Semana
+20260726,2026-07-26,2026,7,Julio,26,Domingo,T3,Fin de Semana
+20260727,2026-07-27,2026,7,Julio,27,Lunes,T3,Día Laboral
+20260728,2026-07-28,2026,7,Julio,28,Martes,T3,Día Laboral
+20260729,2026-07-29,2026,7,Julio,29,Miércoles,T3,Día Laboral
+20260730,2026-07-30,2026,7,Julio,30,Jueves,T3,Día Laboral
+20260731,2026-07-31,2026,7,Julio,31,Viernes,T3,Día Laboral
+20260801,2026-08-01,2026,8,Agosto,1,Sábado,T3,Fin de Semana
+20260802,2026-08-02,2026,8,Agosto,2,Domingo,T3,Fin de Semana
+20260803,2026-08-03,2026,8,Agosto,3,Lunes,T3,Día Laboral
+20260804,2026-08-04,2026,8,Agosto,4,Martes,T3,Día Laboral
+20260805,2026-08-05,2026,8,Agosto,5,Miércoles,T3,Día Laboral
+20260806,2026-08-06,2026,8,Agosto,6,Jueves,T3,Día Laboral
+20260807,2026-08-07,2026,8,Agosto,7,Viernes,T3,Día Laboral
+20260808,2026-08-08,2026,8,Agosto,8,Sábado,T3,Fin de Semana
+20260809,2026-08-09,2026,8,Agosto,9,Domingo,T3,Fin de Semana
+20260810,2026-08-10,2026,8,Agosto,10,Lunes,T3,Día Laboral
+20260811,2026-08-11,2026,8,Agosto,11,Martes,T3,Día Laboral
+20260812,2026-08-12,2026,8,Agosto,12,Miércoles,T3,Día Laboral
+20260813,2026-08-13,2026,8,Agosto,13,Jueves,T3,Día Laboral
+20260814,2026-08-14,2026,8,Agosto,14,Viernes,T3,Día Laboral
+20260815,2026-08-15,2026,8,Agosto,15,Sábado,T3,Fin de Semana
+20260816,2026-08-16,2026,8,Agosto,16,Domingo,T3,Fin de Semana
+20260817,2026-08-17,2026,8,Agosto,17,Lunes,T3,Día Laboral
+20260818,2026-08-18,2026,8,Agosto,18,Martes,T3,Día Laboral
+20260819,2026-08-19,2026,8,Agosto,19,Miércoles,T3,Día Laboral
+20260820,2026-08-20,2026,8,Agosto,20,Jueves,T3,Día Laboral
+20260821,2026-08-21,2026,8,Agosto,21,Viernes,T3,Día Laboral
+20260822,2026-08-22,2026,8,Agosto,22,Sábado,T3,Fin de Semana
+20260823,2026-08-23,2026,8,Agosto,23,Domingo,T3,Fin de Semana
+20260824,2026-08-24,2026,8,Agosto,24,Lunes,T3,Día Laboral
+20260825,2026-08-25,2026,8,Agosto,25,Martes,T3,Día Laboral
+20260826,2026-08-26,2026,8,Agosto,26,Miércoles,T3,Día Laboral
+20260827,2026-08-27,2026,8,Agosto,27,Jueves,T3,Día Laboral
+20260828,2026-08-28,2026,8,Agosto,28,Viernes,T3,Día Laboral
+20260829,2026-08-29,2026,8,Agosto,29,Sábado,T3,Fin de Semana
+20260830,2026-08-30,2026,8,Agosto,30,Domingo,T3,Fin de Semana
+20260831,2026-08-31,2026,8,Agosto,31,Lunes,T3,Día Laboral
+20260901,2026-09-01,2026,9,Setiembre,1,Martes,T3,Día Laboral
+20260902,2026-09-02,2026,9,Setiembre,2,Miércoles,T3,Día Laboral
+20260903,2026-09-03,2026,9,Setiembre,3,Jueves,T3,Día Laboral
+20260904,2026-09-04,2026,9,Setiembre,4,Viernes,T3,Día Laboral
+20260905,2026-09-05,2026,9,Setiembre,5,Sábado,T3,Fin de Semana
+20260906,2026-09-06,2026,9,Setiembre,6,Domingo,T3,Fin de Semana
+20260907,2026-09-07,2026,9,Setiembre,7,Lunes,T3,Día Laboral
+20260908,2026-09-08,2026,9,Setiembre,8,Martes,T3,Día Laboral
+20260909,2026-09-09,2026,9,Setiembre,9,Miércoles,T3,Día Laboral
+20260910,2026-09-10,2026,9,Setiembre,10,Jueves,T3,Día Laboral
+20260911,2026-09-11,2026,9,Setiembre,11,Viernes,T3,Día Laboral
+20260912,2026-09-12,2026,9,Setiembre,12,Sábado,T3,Fin de Semana
+20260913,2026-09-13,2026,9,Setiembre,13,Domingo,T3,Fin de Semana
+20260914,2026-09-14,2026,9,Setiembre,14,Lunes,T3,Día Laboral
+20260915,2026-09-15,2026,9,Setiembre,15,Martes,T3,Día Laboral
+20260916,2026-09-16,2026,9,Setiembre,16,Miércoles,T3,Día Laboral
+20260917,2026-09-17,2026,9,Setiembre,17,Jueves,T3,Día Laboral
+20260918,2026-09-18,2026,9,Setiembre,18,Viernes,T3,Día Laboral
+20260919,2026-09-19,2026,9,Setiembre,19,Sábado,T3,Fin de Semana
+20260920,2026-09-20,2026,9,Setiembre,20,Domingo,T3,Fin de Semana
+20260921,2026-09-21,2026,9,Setiembre,21,Lunes,T3,Día Laboral
+20260922,2026-09-22,2026,9,Setiembre,22,Martes,T3,Día Laboral
+20260923,2026-09-23,2026,9,Setiembre,23,Miércoles,T3,Día Laboral
+20260924,2026-09-24,2026,9,Setiembre,24,Jueves,T3,Día Laboral
+20260925,2026-09-25,2026,9,Setiembre,25,Viernes,T3,Día Laboral
+20260926,2026-09-26,2026,9,Setiembre,26,Sábado,T3,Fin de Semana
+20260927,2026-09-27,2026,9,Setiembre,27,Domingo,T3,Fin de Semana
+20260928,2026-09-28,2026,9,Setiembre,28,Lunes,T3,Día Laboral
+20260929,2026-09-29,2026,9,Setiembre,29,Martes,T3,Día Laboral
+20260930,2026-09-30,2026,9,Setiembre,30,Miércoles,T3,Día Laboral
+20261001,2026-10-01,2026,10,Octubre,1,Jueves,T4,Día Laboral
+20261002,2026-10-02,2026,10,Octubre,2,Viernes,T4,Día Laboral
+20261003,2026-10-03,2026,10,Octubre,3,Sábado,T4,Fin de Semana
+20261004,2026-10-04,2026,10,Octubre,4,Domingo,T4,Fin de Semana
+20261005,2026-10-05,2026,10,Octubre,5,Lunes,T4,Día Laboral
+20261006,2026-10-06,2026,10,Octubre,6,Martes,T4,Día Laboral
+20261007,2026-10-07,2026,10,Octubre,7,Miércoles,T4,Día Laboral
+20261008,2026-10-08,2026,10,Octubre,8,Jueves,T4,Día Laboral
+20261009,2026-10-09,2026,10,Octubre,9,Viernes,T4,Día Laboral
+20261010,2026-10-10,2026,10,Octubre,10,Sábado,T4,Fin de Semana
+20261011,2026-10-11,2026,10,Octubre,11,Domingo,T4,Fin de Semana
+20261012,2026-10-12,2026,10,Octubre,12,Lunes,T4,Día Laboral
+20261013,2026-10-13,2026,10,Octubre,13,Martes,T4,Día Laboral
+20261014,2026-10-14,2026,10,Octubre,14,Miércoles,T4,Día Laboral
+20261015,2026-10-15,2026,10,Octubre,15,Jueves,T4,Día Laboral
+20261016,2026-10-16,2026,10,Octubre,16,Viernes,T4,Día Laboral
+20261017,2026-10-17,2026,10,Octubre,17,Sábado,T4,Fin de Semana
+20261018,2026-10-18,2026,10,Octubre,18,Domingo,T4,Fin de Semana
+20261019,2026-10-19,2026,10,Octubre,19,Lunes,T4,Día Laboral
+20261020,2026-10-20,2026,10,Octubre,20,Martes,T4,Día Laboral
+20261021,2026-10-21,2026,10,Octubre,21,Miércoles,T4,Día Laboral
+20261022,2026-10-22,2026,10,Octubre,22,Jueves,T4,Día Laboral
+20261023,2026-10-23,2026,10,Octubre,23,Viernes,T4,Día Laboral
+20261024,2026-10-24,2026,10,Octubre,24,Sábado,T4,Fin de Semana
+20261025,2026-10-25,2026,10,Octubre,25,Domingo,T4,Fin de Semana
+20261026,2026-10-26,2026,10,Octubre,26,Lunes,T4,Día Laboral
+20261027,2026-10-27,2026,10,Octubre,27,Martes,T4,Día Laboral
+20261028,2026-10-28,2026,10,Octubre,28,Miércoles,T4,Día Laboral
+20261029,2026-10-29,2026,10,Octubre,29,Jueves,T4,Día Laboral
+20261030,2026-10-30,2026,10,Octubre,30,Viernes,T4,Día Laboral
+20261031,2026-10-31,2026,10,Octubre,31,Sábado,T4,Fin de Semana
+20261101,2026-11-01,2026,11,Noviembre,1,Domingo,T4,Fin de Semana
+20261102,2026-11-02,2026,11,Noviembre,2,Lunes,T4,Día Laboral
+20261103,2026-11-03,2026,11,Noviembre,3,Martes,T4,Día Laboral
+20261104,2026-11-04,2026,11,Noviembre,4,Miércoles,T4,Día Laboral
+20261105,2026-11-05,2026,11,Noviembre,5,Jueves,T4,Día Laboral
+20261106,2026-11-06,2026,11,Noviembre,6,Viernes,T4,Día Laboral
+20261107,2026-11-07,2026,11,Noviembre,7,Sábado,T4,Fin de Semana
+20261108,2026-11-08,2026,11,Noviembre,8,Domingo,T4,Fin de Semana
+20261109,2026-11-09,2026,11,Noviembre,9,Lunes,T4,Día Laboral
+20261110,2026-11-10,2026,11,Noviembre,10,Martes,T4,Día Laboral
+20261111,2026-11-11,2026,11,Noviembre,11,Miércoles,T4,Día Laboral
+20261112,2026-11-12,2026,11,Noviembre,12,Jueves,T4,Día Laboral
+20261113,2026-11-13,2026,11,Noviembre,13,Viernes,T4,Día Laboral
+20261114,2026-11-14,2026,11,Noviembre,14,Sábado,T4,Fin de Semana
+20261115,2026-11-15,2026,11,Noviembre,15,Domingo,T4,Fin de Semana
+20261116,2026-11-16,2026,11,Noviembre,16,Lunes,T4,Día Laboral
+20261117,2026-11-17,2026,11,Noviembre,17,Martes,T4,Día Laboral
+20261118,2026-11-18,2026,11,Noviembre,18,Miércoles,T4,Día Laboral
+20261119,2026-11-19,2026,11,Noviembre,19,Jueves,T4,Día Laboral
+20261120,2026-11-20,2026,11,Noviembre,20,Viernes,T4,Día Laboral
+20261121,2026-11-21,2026,11,Noviembre,21,Sábado,T4,Fin de Semana
+20261122,2026-11-22,2026,11,Noviembre,22,Domingo,T4,Fin de Semana
+20261123,2026-11-23,2026,11,Noviembre,23,Lunes,T4,Día Laboral
+20261124,2026-11-24,2026,11,Noviembre,24,Martes,T4,Día Laboral
+20261125,2026-11-25,2026,11,Noviembre,25,Miércoles,T4,Día Laboral
+20261126,2026-11-26,2026,11,Noviembre,26,Jueves,T4,Día Laboral
+20261127,2026-11-27,2026,11,Noviembre,27,Viernes,T4,Día Laboral
+20261128,2026-11-28,2026,11,Noviembre,28,Sábado,T4,Fin de Semana
+20261129,2026-11-29,2026,11,Noviembre,29,Domingo,T4,Fin de Semana
+20261130,2026-11-30,2026,11,Noviembre,30,Lunes,T4,Día Laboral
+20261201,2026-12-01,2026,12,Diciembre,1,Martes,T4,Día Laboral
+20261202,2026-12-02,2026,12,Diciembre,2,Miércoles,T4,Día Laboral
+20261203,2026-12-03,2026,12,Diciembre,3,Jueves,T4,Día Laboral
+20261204,2026-12-04,2026,12,Diciembre,4,Viernes,T4,Día Laboral
+20261205,2026-12-05,2026,12,Diciembre,5,Sábado,T4,Fin de Semana
+20261206,2026-12-06,2026,12,Diciembre,6,Domingo,T4,Fin de Semana
+20261207,2026-12-07,2026,12,Diciembre,7,Lunes,T4,Día Laboral
+20261208,2026-12-08,2026,12,Diciembre,8,Martes,T4,Día Laboral
+20261209,2026-12-09,2026,12,Diciembre,9,Miércoles,T4,Día Laboral
+20261210,2026-12-10,2026,12,Diciembre,10,Jueves,T4,Día Laboral
+20261211,2026-12-11,2026,12,Diciembre,11,Viernes,T4,Día Laboral
+20261212,2026-12-12,2026,12,Diciembre,12,Sábado,T4,Fin de Semana
+20261213,2026-12-13,2026,12,Diciembre,13,Domingo,T4,Fin de Semana
+20261214,2026-12-14,2026,12,Diciembre,14,Lunes,T4,Día Laboral
+20261215,2026-12-15,2026,12,Diciembre,15,Martes,T4,Día Laboral
+20261216,2026-12-16,2026,12,Diciembre,16,Miércoles,T4,Día Laboral
+20261217,2026-12-17,2026,12,Diciembre,17,Jueves,T4,Día Laboral
+20261218,2026-12-18,2026,12,Diciembre,18,Viernes,T4,Día Laboral
+20261219,2026-12-19,2026,12,Diciembre,19,Sábado,T4,Fin de Semana
+20261220,2026-12-20,2026,12,Diciembre,20,Domingo,T4,Fin de Semana
+20261221,2026-12-21,2026,12,Diciembre,21,Lunes,T4,Día Laboral
+20261222,2026-12-22,2026,12,Diciembre,22,Martes,T4,Día Laboral
+20261223,2026-12-23,2026,12,Diciembre,23,Miércoles,T4,Día Laboral
+20261224,2026-12-24,2026,12,Diciembre,24,Jueves,T4,Día Laboral
+20261225,2026-12-25,2026,12,Diciembre,25,Viernes,T4,Día Laboral
+20261226,2026-12-26,2026,12,Diciembre,26,Sábado,T4,Fin de Semana
+20261227,2026-12-27,2026,12,Diciembre,27,Domingo,T4,Fin de Semana
+20261228,2026-12-28,2026,12,Diciembre,28,Lunes,T4,Día Laboral
+20261229,2026-12-29,2026,12,Diciembre,29,Martes,T4,Día Laboral
+20261230,2026-12-30,2026,12,Diciembre,30,Miércoles,T4,Día Laboral
+20261231,2026-12-31,2026,12,Diciembre,31,Jueves,T4,Día Laboral
