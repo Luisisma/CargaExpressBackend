@@ -22,6 +22,8 @@ Este directorio contiene las especificaciones **prácticas, técnicas y de arqui
 | **12** | [Guías de Remisión Electrónicas (GRE-T) y Manifiestos](04-guias-de-remision-y-manifiestos.md) | ✅ **Listo para Exposición** | Normativa SUNAT Res. 123-2022/SUNAT, manifiesto consolidado SUTRAN, impresión aislada sin hojas en blanco y QR oficial. |
 | **13** | [Notificaciones Transaccionales por Correo Electrónico](05-notificaciones-y-correo-transaccional.md) | ✅ **Listo para Exposición** | Motor híbrido resiliente (Gmail STARTTLS puerto 587, Mailtrap Sandbox), codificación UTF-8 RFC 2047 y trazabilidad de eventos. |
 | **14** | [Políticas de Cancelación, Reintegros y Bodegaje](12-politicas-cancelaciones-reintegros-y-bodegaje.md) | ✅ **Listo para Exposición** | Regla de no-custodia de carga impaga, retención 10%, falso flete de S/ 15, bodegaje tras 7 días y anulación por Admin/Supervisor. |
+| **15** | [Data Warehouse, Nómina de Sueldos y Cálculo de ROI](13-data-warehouse-nomina-sueldos-y-roi.md) | ✅ **Listo para Exposición** | **[NUEVO]** Script ETL `generate_dwh_pnl_payroll_roi.py`, nómina de 40 colaboradores con EsSalud 9%, EBITDA (+S/ 34.96K) y ROI 32.23%. |
+| **16** | [Mapa Integral de Rutas, Endpoints y Servicios](14-mapa-integral-rutas-endpoints-y-servicios.md) | ✅ **Listo para Exposición** | **[NUEVO]** Catálogo maestro de todas las rutas HTTP de FastAPI, controladores `endpoints/`, servicios `services/` y modelos ORM. |
 
 ---
 
