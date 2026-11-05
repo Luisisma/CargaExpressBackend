@@ -11,6 +11,7 @@ Esta guía documenta los scripts ejecutables ubicados en [`CargaExpressBackend/s
 | **`populate_full_dwh_2026.py`** | Poblador maestro 2026 (84 agencias, 1,200+ envíos, 4 modalidades, estacionalidad, movimientos de caja). | Cuando se necesita poblar la base de datos completa con datos realistas para demostración y analítica anual. | `.\.venv\Scripts\python.exe scripts\populate_full_dwh_2026.py` |
 | **`regularize_historial_envios.py`** | Reconstrucción cronológica de hitos de auditoría en la tabla `historial_envios`. | Cuando las encomiendas aparecen en tracking público sin su línea de tiempo (*"No hay hitos adicionales"* / órdenes fantasma). | `.\.venv\Scripts\python.exe scripts\regularize_historial_envios.py` |
 | **`export_dwh_for_powerbi.py`** | Extracción ETL dimensional (Star Schema) a archivos CSV (`dwh_powerbi/`). | Cuando se crean o modifican envíos y se desea actualizar el modelo en **Power BI Desktop**. | `.\.venv\Scripts\python.exe scripts\export_dwh_for_powerbi.py` |
+| **`generate_dwh_pnl_payroll_roi.py`** | **[NUEVO]** Generador de nómina laboral, escala salarial por rol, EsSalud 9% y la estrella contable de P&L y ROI. | Cuando se crean o actualizan usuarios o se desea recalcular la rentabilidad y el P&L en Power BI. | `.\.venv\Scripts\python.exe scripts\generate_dwh_pnl_payroll_roi.py` |
 | **`diagnostico_usuarios.py`** | Auditoría y listado de credenciales, roles RBAC y accesos de colaboradores. | Cuando se necesita consultar contraseñas, correos institucionales o verificar usuarios activos por sede. | `.\.venv\Scripts\python.exe scripts\diagnostico_usuarios.py` |
 | **`sync_sql_and_db.py`** | Sincronización entre `cargaexpress.db` (SQLite) y `cargaexpress.sql` (PostgreSQL). | Cuando se realizan cambios en SQLite y se requiere regenerar el script SQL maestro de base de datos. | `.\.venv\Scripts\python.exe scripts\sync_sql_and_db.py` |
 | **`reparar_agencias_y_usuarios.py`** | Verificación de integridad referencial entre colaboradores y agencias operativas. | Si algún usuario queda huérfano de sede o se agregan agencias nuevas que requieren personal asignado. | `.\.venv\Scripts\python.exe scripts\reparar_agencias_y_usuarios.py` |
@@ -60,17 +61,26 @@ Esta guía documenta los scripts ejecutables ubicados en [`CargaExpressBackend/s
 
 ---
 
-### Caso 3: Deseo actualizar los gráficos en Power BI Desktop
+### Caso 3: Deseo actualizar los gráficos en Power BI Desktop (Comando Maestro Integral)
 * **Archivo:** [`CargaExpressBackend/scripts/export_dwh_for_powerbi.py`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/scripts/export_dwh_for_powerbi.py)
 * **¿Cuándo usarlo?:**  
-  Cuando registras nuevos envíos o ejecutas pruebas y quieres que los tableros analíticos de Power BI Desktop reflejen los datos más recientes.
+  Cuando registras nuevos envíos, registras nuevos usuarios/trabajadores o realizas cobros en caja, y deseas que todos los tableros analíticos de Power BI Desktop reflejen los datos más recientes.
 * **¿Qué genera?:**  
-  Exporta 5 tablas en formato CSV en la carpeta `CargaExpressBackend/dwh_powerbi/`:
-  - `dim_agencia.csv` (84 agencias, departamentos, provincias, distritos, ubigeo)
-  - `dim_cliente.csv` (Directorio de clientes clasificados: Persona Natural vs Jurídica)
-  - `dim_tiempo.csv` (Calendario 2026: trimestres, meses, semanas, laborables)
-  - `fact_envios.csv` (Hechos de envíos: fletes, pesos, IGV, modalidad, estado)
-  - `fact_caja_movimientos.csv` (Hechos de tesorería: ingresos, egresos, medios de pago)
+  Exporta las **7 tablas analíticas completas** en formato CSV en la carpeta `CargaExpressBackend/dwh_powerbi/`:
+  1. `dim_agencia.csv` (84 agencias, departamentos, provincias, distritos, ubigeo)
+  2. `dim_cliente.csv` (Directorio de clientes clasificados: Persona Natural vs Jurídica)
+  3. `dim_tiempo.csv` (Calendario 2026: trimestres, meses, semanas, laborables)
+  4. `fact_envios.csv` (Hechos de envíos: fletes, pesos, IGV, modalidad, estado)
+  5. `fact_caja_movimientos.csv` (Hechos de tesorería: ingresos, egresos, medios de pago)
+  6. `dim_empleado.csv` (Nómina oficial: 40 colaboradores con sueldos por rol y EsSalud 9%)
+  7. `fact_pnl_rentabilidad_mes.csv` (Estado de Resultados: ingresos, costos, Utilidad Neta y ROI)
+* **Comando:**
+  ```powershell
+  cd C:\Users\User\Documents\VSC-Integrador\CargaExpressBackend
+  .\.venv\Scripts\python.exe scripts\export_dwh_for_powerbi.py
+  ```
+* **Paso en Power BI Desktop:**  
+  Una vez ejecutado, abre tu archivo `.pbix` y en la pestaña superior presiona el botón **🔄 Actualizar**. Todas las páginas se recalcularán de inmediato.
 * **Comando:**
   ```powershell
   cd C:\Users\User\Documents\VSC-Integrador\CargaExpressBackend
@@ -94,6 +104,23 @@ Esta guía documenta los scripts ejecutables ubicados en [`CargaExpressBackend/s
   - **Contraseña universal de colaboradores:** `CargaExp#2026`
   - **Formato de email:** `nombre.apellido@cargaexpress.pe`
   - **Administrador General:** `admin@cargaexpress.pe`
+
+---
+
+### Caso 5: Recalcular Planilla, Nómina Laboral y Rentabilidad Real (ROI y P&L)
+* **Archivo:** [`CargaExpressBackend/scripts/generate_dwh_pnl_payroll_roi.py`](file:///c:/Users/User/Documents/VSC-Integrador/CargaExpressBackend/scripts/generate_dwh_pnl_payroll_roi.py)
+* **¿Cuándo usarlo?:**  
+  Cuando registras nuevos usuarios/trabajadores en el sistema o deseas regenerar la nómina con escala salarial formal de mercado, cargas sociales EsSalud 9% y la estrella contable de Ganancias y Pérdidas (`fact_pnl_rentabilidad_mes.csv`) para Power BI.
+* **¿Qué genera?:**  
+  - `dim_empleado.csv` (40 colaboradores categorizados con sus sueldos y cargas de ley).
+  - `fact_pnl_rentabilidad_mes.csv` (248 registros mensuales con facturación, combustible, planilla, alquileres, Utilidad Neta +S/ 34.96K y ROI 32.23%).
+* **Comando:**
+  ```powershell
+  cd C:\Users\User\Documents\VSC-Integrador\CargaExpressBackend
+  .\.venv\Scripts\python.exe scripts\generate_dwh_pnl_payroll_roi.py
+  ```
+* **Paso en Power BI Desktop:**  
+  Presiona el botón **🔄 Actualizar** en Power BI y la pestaña *4. P&L, Sueldos y Rentabilidad (ROI)* reflejará los nuevos colaboradores y costos de inmediato.
 
 ---
 

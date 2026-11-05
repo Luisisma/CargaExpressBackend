@@ -299,6 +299,16 @@ def main():
     print("5. Exportando fact_caja_movimientos...")
     export_fact_cajas(cursor)
     
+    # 6. Sincronizar nómina de empleados y estrella contable de P&L / ROI
+    try:
+        from generate_dwh_pnl_payroll_roi import generate_dim_empleado, generate_fact_pnl
+        print("6. Exportando dim_empleado (Nómina y sueldos por rol)...")
+        empleados = generate_dim_empleado(conn)
+        print("7. Exportando fact_pnl_rentabilidad_mes (Estado de Resultados P&L y ROI)...")
+        generate_fact_pnl(conn, empleados)
+    except Exception as e:
+        print(f"  [AVISO] No se pudo invocar generate_dwh_pnl_payroll_roi: {e}")
+    
     conn.close()
     print("------------------------------------------------------------------")
     print(f" [EXITO] Archivos actualizados en: {OUTPUT_DIR}")

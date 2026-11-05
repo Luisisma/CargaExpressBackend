@@ -1,0 +1,21 @@
+﻿ruta_id,codigo_ruta,nombre_ruta,departamento_origen,departamento_destino,distancia_km,numero_peajes,costo_peajes_estimado_pen,tiempo_horas_estimado
+1,RUTA-LIM-AQP,Lima ➔ Arequipa (Panamericana Sur),Lima,Arequipa,1015,8,148.0,15.5
+2,RUTA-LIM-TRU,Lima ➔ Trujillo (Panamericana Norte),Lima,La Libertad,560,6,114.0,8.5
+3,RUTA-LIM-HYO,Lima ➔ Huancayo (Carretera Central),Lima,Junín,310,3,49.0,7.0
+4,RUTA-LIM-PIU,Lima ➔ Piura (Norte Troncal),Lima,Piura,985,9,168.0,14.0
+5,RUTA-LIM-CUS,Lima ➔ Cusco (Vía Nazca - Abancay),Lima,Cusco,1105,7,132.0,20.0
+6,RUTA-LIM-ICA,Lima ➔ Ica (Autopista Chincha),Lima,Ica,305,3,52.0,4.5
+7,RUTA-LIM-CHX,Lima ➔ Chiclayo (Panamericana Norte),Lima,Lambayeque,770,7,132.0,11.0
+8,RUTA-AQP-CUS,Arequipa ➔ Cusco (Corredor Sur),Arequipa,Cusco,510,4,68.0,9.5
+9,RUTA-AQP-TAC,Arequipa ➔ Tacna (Frontera Sur),Arequipa,Tacna,370,3,46.0,5.5
+10,RUTA-TRU-CHX,Trujillo ➔ Chiclayo (Macro Norte),La Libertad,Lambayeque,215,2,36.0,3.2
+11,RUTA-LIM-ANC,Lima ➔ Chimbote / Huaraz,Lima,Ancash,425,4,76.0,6.5
+12,RUTA-LIM-AYC,Lima ➔ Ayacucho (Vía Los Libertadores),Lima,Ayacucho,565,4,72.0,10.0
+13,RUTA-HYO-PAS,Huancayo ➔ Cerro de Pasco / Huánuco,Junín,Huánuco,230,2,32.0,5.0
+14,RUTA-TRU-CAJ,Trujillo ➔ Cajamarca (Sierra Norte),La Libertad,Cajamarca,300,3,48.0,7.5
+15,RUTA-AQP-PUN,Arequipa ➔ Puno / Juliaca,Arequipa,Puno,295,2,34.0,5.5
+16,RUTA-LIM-TUM,Lima ➔ Tumbes (Frontera Norte),Lima,Tumbes,1270,11,198.0,18.0
+17,RUTA-LIM-UCA,Lima ➔ Pucallpa (Carretera F. Basadre),Lima,Ucayali,780,5,85.0,16.5
+18,RUTA-LIM-SMT,Lima ➔ Tarapoto / Moyobamba,Lima,San Martín,990,6,102.0,21.0
+19,RUTA-LIM-LOR,Lima ➔ Iquitos (Bimodal Terrestre-Fluvial),Lima,Loreto,1350,4,75.0,48.0
+20,RUTA-AQP-MOQ,Arequipa ➔ Moquegua / Ilo,Arequipa,Moquegua,220,2,30.0,3.5

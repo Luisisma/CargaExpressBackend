@@ -1,0 +1,17 @@
+﻿vehiculo_id,placa,tipo_vehiculo,marca_modelo,capacidad_carga_kg,volumen_m3,tipo_combustible,rendimiento_km_galon,estado_mecanico
+1,V7A-890,Camión Troncal Pesado,Volvo FH 500,15000,65.0,Diésel D-50,12.5,Excelente (Operativo)
+2,V8B-712,Camión Troncal Pesado,Mercedes-Benz Actros,15000,65.0,Diésel D-50,12.8,Excelente (Operativo)
+3,B9C-432,Camión Troncal Pesado,Scania R450,14000,60.0,Diésel D-50,13.0,Excelente (Operativo)
+4,C1D-654,Camión Troncal Pesado,International WorkStar,12000,52.0,Diésel D-50,11.5,Excelente (Operativo)
+5,T2E-119,Camión Intermedio Regional,Hino 500 Series,8000,38.0,Diésel D-50,16.0,Excelente (Operativo)
+6,T3F-982,Camión Intermedio Regional,Isuzu Forward,7500,35.0,Diésel D-50,16.5,Excelente (Operativo)
+7,A4G-551,Camión Intermedio Regional,Fuso Fighter,7000,32.0,Diésel D-50,17.0,Mantenimiento Preventivo
+8,A5H-304,Furgón Urbano Transferencia,Hyundai HD78,4500,22.0,Diésel D-50,22.0,Excelente (Operativo)
+9,P6I-771,Furgón Urbano Transferencia,Mitsubishi Canter,4000,20.0,Diésel D-50,23.5,Excelente (Operativo)
+10,P7J-882,Furgón Urbano Transferencia,Kia K2700,2500,14.0,Diésel D-50,28.0,Excelente (Operativo)
+11,M1K-102,Moto Reparto Courier,Honda GL 150 Cargo,180,0.8,Gasolina 95,140.0,Excelente (Operativo)
+12,M2L-304,Moto Reparto Courier,Bajaj Boxer 150,180,0.8,Gasolina 95,145.0,Excelente (Operativo)
+13,M3M-509,Moto Reparto Courier,Yamaha YBR 125,160,0.7,Gasolina 95,150.0,Excelente (Operativo)
+14,M4N-618,Moto Reparto Courier,Honda GL 150 Cargo,180,0.8,Gasolina 95,140.0,Excelente (Operativo)
+15,M5O-722,Moto Reparto Courier,Bajaj Platina 125,150,0.7,Gasolina 95,155.0,Excelente (Operativo)
+16,M6P-831,Moto Reparto Courier,Honda Navi Cargo,120,0.5,Gasolina 95,130.0,Excelente (Operativo)
