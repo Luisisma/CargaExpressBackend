@@ -1263,7 +1263,7 @@
 1262,CE-2026-NQ3EGTJ,20261102,2026-11-02,62,56,7,36,agencia_agencia,sobre,0.5,0.53,14.47,2.6,17.07,tarjeta,pagado,en_transito,
 1263,CE-2026-NNPWJ6V,20261102,2026-11-02,32,61,29,45,agencia_agencia,caja,10.0,9.8,67.88,12.22,80.1,plin,pagado,entregado,41.1
 1264,CE-2026-N69495Q,20261103,2026-11-03,9,79,11,39,agencia_agencia,caja,35.0,30.0,211.76,38.12,249.88,tarjeta,pagado,en_agencia_destino,
-1265,CE-2026-NPW2Q43,20261103,2026-11-03,69,27,30,35,domicilio_domicilio,caja,18.0,18.0,131.95,23.75,155.7,tarjeta,pagado,en_agencia_destino,
+1265,CE-2026-NPW2Q43,20261103,2026-11-03,69,27,30,35,domicilio_domicilio,caja,18.0,18.0,131.95,23.75,155.7,tarjeta,pagado,en_reparto,
 1266,CE-2026-NKNESD9,20261103,2026-11-03,2,54,13,1,agencia_domicilio,caja,5.0,3.75,53.06,9.55,62.61,efectivo,pagado,en_transito,
 1267,CE-2026-NPS357X,20261103,2026-11-03,22,59,43,9,agencia_agencia,sobre,0.5,0.53,13.69,2.46,16.15,tarjeta,pagado,recepcionado,
 1268,CE-2026-NKXBEVA,20261103,2026-11-03,4,16,19,8,domicilio_domicilio,caja,5.0,3.75,48.02,8.64,56.66,tarjeta,pagado,en_reparto,

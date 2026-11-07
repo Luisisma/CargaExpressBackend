@@ -24,6 +24,7 @@ Este directorio contiene las especificaciones **prácticas, técnicas y de arqui
 | **14** | [Políticas de Cancelación, Reintegros y Bodegaje](12-politicas-cancelaciones-reintegros-y-bodegaje.md) | ✅ **Listo para Exposición** | Regla de no-custodia de carga impaga, retención 10%, falso flete de S/ 15, bodegaje tras 7 días y anulación por Admin/Supervisor. |
 | **15** | [Data Warehouse, Nómina de Sueldos y Cálculo de ROI](13-data-warehouse-nomina-sueldos-y-roi.md) | ✅ **Listo para Exposición** | **[NUEVO]** Script ETL `generate_dwh_pnl_payroll_roi.py`, nómina de 40 colaboradores con EsSalud 9%, EBITDA (+S/ 34.96K) y ROI 32.23%. |
 | **16** | [Mapa Integral de Rutas, Endpoints y Servicios](14-mapa-integral-rutas-endpoints-y-servicios.md) | ✅ **Listo para Exposición** | **[NUEVO]** Catálogo maestro de todas las rutas HTTP de FastAPI, controladores `endpoints/`, servicios `services/` y modelos ORM. |
+| **17** | [Planificación Estratégica: Pasarela Digital, App Móvil Transportista, 3PL y COD](15-planificacion-futura-pasarela-pwa-transportista-3pl-cod.md) | 📋 **Planificación / En Diseño** | **[NUEVO]** Estrategia de abordaje para Sprints 12, 13 y 14: Webhooks de pago, PWA chofer in situ con escaneo QR/cámara, contingencia 3PL y Cash on Delivery. |
 
 ---
 
